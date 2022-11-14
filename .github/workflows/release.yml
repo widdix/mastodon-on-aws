@@ -1,0 +1,23 @@
+---
+name: release
+on:
+  push:
+    tags: ['v*']
+permissions:
+  id-token: write
+  contents: read
+defaults:
+  run:
+    shell: bash
+jobs:
+  release:
+    needs: unit-test
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v3
+    - uses: aws-actions/configure-aws-credentials@v1-node16
+      with:
+        role-to-assume: arn:aws:iam::730350136264:role/github-openid-connect
+        role-session-name: github-actions-marbot
+        aws-region: eu-central-1
+    - run: 'aws cloudformation package --template-file mastodon.yaml --s3-bucket mastodon-on-aws-cloudformation --output-template-file quickstart.yml && aws s3 cp quickstart.yml s3://mastodon-on-aws-cloudformation/${GITHUB_REF_NAME}/quickstart.yml'

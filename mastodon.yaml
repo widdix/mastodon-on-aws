@@ -1,0 +1,548 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Mastodon on AWS'
+Parameters:
+  DomainName:
+    Description: 'The domain name for the Mastodon instance (e.g. social.cloudonaut.io)'
+    Type: String
+  SecretKeyBase:
+    Description: 'The domain name for the Mastodon instance (e.g. social.cloudonaut.io)'
+    Type: String
+    NoEcho: true
+  OtpSecret:
+    Description: 'The domain name for the Mastodon instance (e.g. social.cloudonaut.io)'
+    Type: String
+    NoEcho: true
+  VapidPrivateKey:
+    Description: 'The domain name for the Mastodon instance (e.g. social.cloudonaut.io)'
+    Type: String
+    NoEcho: true
+  VapidPublicKey:
+    Description: 'The domain name for the Mastodon instance (e.g. social.cloudonaut.io)'
+    Type: String
+    NoEcho: true
+  Spot:
+    Description: ''
+    Type: String
+    Default: true
+    AllowedValues: [true, false]
+  AlertingHttpsEndpoint:
+    Description: 'The domain name for the Mastodon instance (e.g. social.cloudonaut.io)'
+    Type: String
+    Default: ''
+Resources:
+  Alerting:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      Parameters:
+        HttpsEndpoint: !Ref AlertingHttpsEndpoint
+      TemplateURL: './node_modules/@cfn-modules/alerting/module.yml'
+  Key:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      Parameters:
+        AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
+        AliasName: ''
+      TemplateURL: './node_modules/@cfn-modules/kms-key/module.yml'
+  Secret:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      Parameters:
+        KmsKeyModule: !GetAtt 'Key.Outputs.StackName'
+        Description: 'Database password for Mastodon on AWS'
+        CharactersToExclude: '"@/\'
+        PasswordLength: 30
+      TemplateURL: './node_modules/@cfn-modules/secret/module.yml'
+  HostedZone:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      Parameters:
+        Name: !Ref DomainName
+      TemplateURL: './node_modules/@cfn-modules/route53-hosted-zone-public/module.yml'
+  Vpc:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      Parameters:
+        AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
+        ClassB: 0
+        NumberOfAvailabilityZones: 2
+        S3Endpoint: true
+        DynamoDBEndpoint: true
+        FlowLog: 'reject-only'
+        FlowLogRetentionInDays: 14
+        NatGateways: false
+      TemplateURL: './node_modules/@cfn-modules/vpc/module.yml'
+  ClientSg:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      Parameters:
+        VpcModule: !GetAtt 'Vpc.Outputs.StackName'
+      TemplateURL: './node_modules/@cfn-modules/client-sg/module.yml'
+  Bucket:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      Parameters:
+        Access: PublicRead
+        Versioning: 'false'
+        Cors: 'AllowAll'
+      TemplateURL: './node_modules/@cfn-modules/s3-bucket/module.yml'
+  Cache:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      Parameters:
+        VpcModule: !GetAtt 'Vpc.Outputs.StackName'
+        ClientSgModule: !GetAtt 'ClientSg.Outputs.StackName'
+        AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
+        KmsKeyModule: !GetAtt 'Key.Outputs.StackName'
+        EngineVersion: '5.0.5'
+        CacheNodeType: 'cache.t2.micro'
+        TransitEncryption: 'false'
+        AuthToken: ''
+        SnapshotRetentionLimit: '35'
+        SnapshotName: ''
+        NumShards: '1'
+        NumReplicas: '1'
+      TemplateURL: './node_modules/@cfn-modules/elasticache-redis/module.yml'
+  AuroraServerlessCluster:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      Parameters:
+        VpcModule: !GetAtt 'Vpc.Outputs.StackName'
+        ClientSgModule: !GetAtt 'ClientSg.Outputs.StackName'
+        KmsKeyModule: !GetAtt 'Key.Outputs.StackName'
+        AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
+        SecretModule: !GetAtt 'Secret.Outputs.StackName'
+        DBSnapshotIdentifier: ''
+        DBName: 'mastodon'
+        DBBackupRetentionPeriod: '30'
+        DBMasterUsername: 'mastodon'
+        DBMasterUserPassword: '...'
+        PreferredBackupWindow: '09:54-10:24'
+        PreferredMaintenanceWindow: 'sat:07:00-sat:07:30'
+        AutoPause: 'true'
+        SecondsUntilAutoPause: '300'
+        MaxCapacity: '2'
+        MinCapacity: '2'
+        EngineVersion: '10.7'
+        EnableDataApi: 'false'
+      TemplateURL: './node_modules/@cfn-modules/rds-aurora-serverless-postgres/module.yml'
+  Cluster:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      TemplateURL: './node_modules/@cfn-modules/ecs-cluster/module.yml'
+  WebService:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      Parameters:
+        ClusterModule: !GetAtt 'Cluster.Outputs.StackName'
+        VpcModule: !GetAtt 'Vpc.Outputs.StackName'
+        TargetModule: !GetAtt 'Target.Outputs.StackName'
+        AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
+        ClientSgModule1: !GetAtt 'ClientSg.Outputs.StackName'
+        ManagedPolicyArns: !Ref S3Policy
+        AppImage: 'tootsuite/mastodon:v3.5.3'
+        AppCommand: 'bash,-c,bundle exec rails db:migrate && bundle exec rails s -p 3000'
+        AppPort: '3000'
+        AppEnvironment1Key: 'LOCAL_DOMAIN'
+        AppEnvironment1Value: !Ref DomainName
+        AppEnvironment2Key: 'REDIS_HOST'
+        AppEnvironment2Value: !GetAtt 'Cache.Outputs.DnsName'
+        AppEnvironment3Key: 'DB_PASS'
+        AppEnvironment3SecretModule: !GetAtt 'Secret.Outputs.StackName'
+        AppEnvironment4Key: 'ES_ENABLED'
+        AppEnvironment4Value: 'false'
+        AppEnvironment4SecretModule: ''
+        AppEnvironment5Key: 'SECRET_KEY_BASE'
+        AppEnvironment5Value: !Ref SecretKeyBase
+        AppEnvironment5SecretModule: ''
+        AppEnvironment6Key: 'OTP_SECRET'
+        AppEnvironment6Value: !Ref OtpSecret
+        AppEnvironment7Key: 'VAPID_PRIVATE_KEY'
+        AppEnvironment7Value: !Ref VapidPrivateKey
+        AppEnvironment8Key: 'VAPID_PUBLIC_KEY'
+        AppEnvironment8Value: !Ref VapidPublicKey
+        AppEnvironment9Key: 'S3_ENABLED'
+        AppEnvironment9Value: 'true'
+        AppEnvironment10Key: 'S3_BUCKET'
+        AppEnvironment10Value: !GetAtt 'Bucket.Outputs.Name'
+        AppEnvironment11Key: 'DB_NAME'
+        AppEnvironment11Value: 'mastodon'
+        AppEnvironment12Key: 'DB_USER'
+        AppEnvironment12Value: 'mastodon'
+        AppEnvironment13Key: 'DB_HOST'
+        AppEnvironment13Value: !GetAtt 'AuroraServerlessCluster.Outputs.DnsName'
+        AppEnvironment14Key: 'RAILS_ENV'
+        AppEnvironment14Value: 'production'
+        AppEnvironment15Key: 'SMTP_SERVER'
+        AppEnvironment15Value: !Sub 'email-smtp.${AWS::Region}.amazonaws.com'
+        AppEnvironment16Key: 'SMTP_PORT'
+        AppEnvironment16Value: '587'
+        AppEnvironment17Key: 'SMTP_LOGIN'
+        AppEnvironment17Value: !Ref 'EmailUserAccessKey'
+        AppEnvironment18Key: 'SMTP_PASSWORD'
+        AppEnvironment18Value: !GetAtt 'SmtpPasswordConverter.SmtpPassword'
+        AppEnvironment19Key: 'SMTP_FROM_ADDRESS'
+        AppEnvironment19Value: !Sub 'noreply@${DomainName}'
+        AppEnvironment20Key: 'S3_REGION'
+        AppEnvironment20Value: !Ref 'AWS::Region'
+        Cpu: '1'
+        Memory: '2'
+        DesiredCount: '1'
+        MaxCapacity: '1'
+        MinCapacity: '1'
+        LogsRetentionInDays: '14'
+        SubnetsReach: 'Public'
+        AutoScaling: 'false'
+        HealthCheckGracePeriodSeconds: '60'
+        Spot: !Ref Spot
+        CpuArchitecture: 'X86_64'
+        OperatingSystemFamily: 'LINUX'
+        ExecuteCommand: true
+      TemplateURL: './node_modules/@cfn-modules/fargate-service/module.yml'
+  StreamingApiService:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      Parameters:
+        ClusterModule: !GetAtt 'Cluster.Outputs.StackName'
+        VpcModule: !GetAtt 'Vpc.Outputs.StackName'
+        TargetModule: !GetAtt 'StreamingApiTarget.Outputs.StackName'
+        AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
+        ClientSgModule1: !GetAtt 'ClientSg.Outputs.StackName'
+        ManagedPolicyArns: !Ref S3Policy
+        AppImage: 'tootsuite/mastodon:v3.5.3'
+        AppCommand: 'bash,-c,node ./streaming'
+        AppPort: '4000'
+        AppEnvironment1Key: 'LOCAL_DOMAIN'
+        AppEnvironment1Value: !Ref DomainName
+        AppEnvironment2Key: 'REDIS_HOST'
+        AppEnvironment2Value: !GetAtt 'Cache.Outputs.DnsName'
+        AppEnvironment3Key: 'DB_PASS'
+        AppEnvironment3SecretModule: !GetAtt 'Secret.Outputs.StackName'
+        AppEnvironment4Key: 'ES_ENABLED'
+        AppEnvironment4Value: 'false'
+        AppEnvironment4SecretModule: ''
+        AppEnvironment5Key: 'SECRET_KEY_BASE'
+        AppEnvironment5Value: !Ref SecretKeyBase
+        AppEnvironment5SecretModule: ''
+        AppEnvironment6Key: 'OTP_SECRET'
+        AppEnvironment6Value: !Ref OtpSecret
+        AppEnvironment7Key: 'VAPID_PRIVATE_KEY'
+        AppEnvironment7Value: !Ref VapidPrivateKey
+        AppEnvironment8Key: 'VAPID_PUBLIC_KEY'
+        AppEnvironment8Value: !Ref VapidPublicKey
+        AppEnvironment9Key: 'S3_ENABLED'
+        AppEnvironment9Value: 'true'
+        AppEnvironment10Key: 'S3_BUCKET'
+        AppEnvironment10Value: !GetAtt 'Bucket.Outputs.Name'
+        AppEnvironment11Key: 'DB_NAME'
+        AppEnvironment11Value: 'mastodon'
+        AppEnvironment12Key: 'DB_USER'
+        AppEnvironment12Value: 'mastodon'
+        AppEnvironment13Key: 'DB_HOST'
+        AppEnvironment13Value: !GetAtt 'AuroraServerlessCluster.Outputs.DnsName'
+        AppEnvironment14Key: 'RAILS_ENV'
+        AppEnvironment14Value: 'production'
+        AppEnvironment15Key: 'SMTP_SERVER'
+        AppEnvironment15Value: !Sub 'email-smtp.${AWS::Region}.amazonaws.com'
+        AppEnvironment16Key: 'SMTP_PORT'
+        AppEnvironment16Value: '587'
+        AppEnvironment17Key: 'SMTP_LOGIN'
+        AppEnvironment17Value: !Ref 'EmailUserAccessKey'
+        AppEnvironment18Key: 'SMTP_PASSWORD'
+        AppEnvironment18Value: !GetAtt 'SmtpPasswordConverter.SmtpPassword'
+        AppEnvironment19Key: 'SMTP_FROM_ADDRESS'
+        AppEnvironment19Value: !Sub 'noreply@${DomainName}'
+        AppEnvironment20Key: 'S3_REGION'
+        AppEnvironment20Value: !Ref 'AWS::Region'
+        Cpu: '1'
+        Memory: '2'
+        DesiredCount: '1'
+        MaxCapacity: '1'
+        MinCapacity: '1'
+        LogsRetentionInDays: '14'
+        SubnetsReach: 'Public'
+        AutoScaling: 'false'
+        HealthCheckGracePeriodSeconds: '60'
+        Spot: !Ref Spot
+        CpuArchitecture: 'X86_64'
+        OperatingSystemFamily: 'LINUX'
+        ExecuteCommand: true
+      TemplateURL: './node_modules/@cfn-modules/fargate-service/module.yml'
+  SidekiqService:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      Parameters:
+        ClusterModule: !GetAtt 'Cluster.Outputs.StackName'
+        VpcModule: !GetAtt 'Vpc.Outputs.StackName'
+        AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
+        ClientSgModule1: !GetAtt 'ClientSg.Outputs.StackName'
+        ManagedPolicyArns: !Ref S3Policy
+        AppImage: 'tootsuite/mastodon:v3.5.3'
+        AppCommand: 'bash,-c,bundle exec sidekiq'
+        AppEnvironment1Key: 'LOCAL_DOMAIN'
+        AppEnvironment1Value: !Ref DomainName
+        AppEnvironment2Key: 'REDIS_HOST'
+        AppEnvironment2Value: !GetAtt 'Cache.Outputs.DnsName'
+        AppEnvironment3Key: 'DB_PASS'
+        AppEnvironment3SecretModule: !GetAtt 'Secret.Outputs.StackName'
+        AppEnvironment4Key: 'ES_ENABLED'
+        AppEnvironment4Value: 'false'
+        AppEnvironment4SecretModule: ''
+        AppEnvironment5Key: 'SECRET_KEY_BASE'
+        AppEnvironment5Value: !Ref SecretKeyBase
+        AppEnvironment5SecretModule: ''
+        AppEnvironment6Key: 'OTP_SECRET'
+        AppEnvironment6Value: !Ref OtpSecret
+        AppEnvironment7Key: 'VAPID_PRIVATE_KEY'
+        AppEnvironment7Value: !Ref VapidPrivateKey
+        AppEnvironment8Key: 'VAPID_PUBLIC_KEY'
+        AppEnvironment8Value: !Ref VapidPublicKey
+        AppEnvironment9Key: 'S3_ENABLED'
+        AppEnvironment9Value: 'true'
+        AppEnvironment10Key: 'S3_BUCKET'
+        AppEnvironment10Value: !GetAtt 'Bucket.Outputs.Name'
+        AppEnvironment11Key: 'DB_NAME'
+        AppEnvironment11Value: 'mastodon'
+        AppEnvironment12Key: 'DB_USER'
+        AppEnvironment12Value: 'mastodon'
+        AppEnvironment13Key: 'DB_HOST'
+        AppEnvironment13Value: !GetAtt 'AuroraServerlessCluster.Outputs.DnsName'
+        AppEnvironment14Key: 'RAILS_ENV'
+        AppEnvironment14Value: 'production'
+        AppEnvironment15Key: 'SMTP_SERVER'
+        AppEnvironment15Value: !Sub 'email-smtp.${AWS::Region}.amazonaws.com'
+        AppEnvironment16Key: 'SMTP_PORT'
+        AppEnvironment16Value: '587'
+        AppEnvironment17Key: 'SMTP_LOGIN'
+        AppEnvironment17Value: !Ref 'EmailUserAccessKey'
+        AppEnvironment18Key: 'SMTP_PASSWORD'
+        AppEnvironment18Value: !GetAtt 'SmtpPasswordConverter.SmtpPassword'
+        AppEnvironment19Key: 'SMTP_FROM_ADDRESS'
+        AppEnvironment19Value: !Sub 'noreply@${DomainName}'
+        AppEnvironment20Key: 'S3_REGION'
+        AppEnvironment20Value: !Ref 'AWS::Region'
+        Cpu: '1'
+        Memory: '2'
+        DesiredCount: '1'
+        MaxCapacity: '1'
+        MinCapacity: '1'
+        LogsRetentionInDays: '14'
+        SubnetsReach: 'Public'
+        AutoScaling: 'false'
+        HealthCheckGracePeriodSeconds: '60'
+        Spot: !Ref Spot
+        CpuArchitecture: 'X86_64'
+        OperatingSystemFamily: 'LINUX'
+        ExecuteCommand: true
+      TemplateURL: './node_modules/@cfn-modules/fargate-service/module.yml'
+  Alb:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      Parameters:
+        VpcModule: !GetAtt 'Vpc.Outputs.StackName'
+        AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
+        BucketModule: ''
+        Scheme: 'internet-facing'
+        IdleTimeoutInSeconds: '60'
+      TemplateURL: './node_modules/@cfn-modules/alb/module.yml'
+  AlbListener:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      Parameters:
+        AlbModule: !GetAtt 'Alb.Outputs.StackName'
+        Port: '443'
+        CertificateArn: !GetAtt 'Certificate.Outputs.Arn'
+        ClientSgModule: ''
+      TemplateURL: './node_modules/@cfn-modules/alb-listener/module.yml'
+  Target:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      Parameters:
+        AlbModule: !GetAtt 'Alb.Outputs.StackName'
+        AlbListenerModule: !GetAtt 'AlbListener.Outputs.StackName'
+        VpcModule: !GetAtt 'Vpc.Outputs.StackName'
+        AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
+        HealthCheckPath: '/health'
+        Priority: 3
+      TemplateURL: './node_modules/@cfn-modules/ecs-alb-target/module.yml'
+  StreamingApiTarget:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      Parameters:
+        AlbModule: !GetAtt 'Alb.Outputs.StackName'
+        AlbListenerModule: !GetAtt 'AlbListener.Outputs.StackName'
+        VpcModule: !GetAtt 'Vpc.Outputs.StackName'
+        AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
+        HealthCheckPath: '/api/v1/streaming/health'
+        PathPattern: '/api/v1/streaming/*'
+        Priority: 2
+      TemplateURL: './node_modules/@cfn-modules/ecs-alb-target/module.yml'
+  Certificate:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      Parameters:
+        HostedZoneModule: !GetAtt 'HostedZone.Outputs.StackName'
+      TemplateURL: './node_modules/@cfn-modules/acm-wildcard-certificate-public/module.yml'
+  Record:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      Parameters:
+        HostedZoneModule: !GetAtt 'HostedZone.Outputs.StackName'
+        LoadBalancerModule: !GetAtt 'Alb.Outputs.StackName'
+        SubDomainNameWithDot: ''
+      TemplateURL: './node_modules/@cfn-modules/lb-dns-record/module.yml'
+  Dashboard:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      Parameters:
+        DashboardName: 'mastodon-on-aws'
+        AlbModule: !GetAtt 'Alb.Outputs.StackName'
+        FargateServiceModule: !GetAtt 'WebService.Outputs.StackName'
+        RdsAuroraServerlessModule: !GetAtt 'AuroraServerlessCluster.Outputs.StackName'
+      TemplateURL: './node_modules/@cfn-modules/cloudwatch-dashboard/module.yml'
+  S3Policy:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Properties:
+      Description: 'Accessing S3 bucket'
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+        - Effect: Allow
+          Action: 's3:*'
+          Resource: !Split [',', !GetAtt 'Bucket.Outputs.IamResources']
+  EmailIdentity:
+    Type: AWS::SES::EmailIdentity
+    Properties: 
+      DkimAttributes: 
+        SigningEnabled: true
+      EmailIdentity: !Ref DomainName
+  Dkim1Record:
+    Type: AWS::Route53::RecordSet
+    Properties: 
+      HostedZoneId: !GetAtt 'HostedZone.Outputs.Id'
+      Name: !GetAtt 'EmailIdentity.DkimDNSTokenName1'
+      ResourceRecords:
+      - !GetAtt 'EmailIdentity.DkimDNSTokenValue1'
+      TTL: 300
+      Type: CNAME
+  Dkim2Record:
+    Type: AWS::Route53::RecordSet
+    Properties: 
+      HostedZoneId: !GetAtt 'HostedZone.Outputs.Id'
+      Name: !GetAtt 'EmailIdentity.DkimDNSTokenName2'
+      ResourceRecords:
+      - !GetAtt 'EmailIdentity.DkimDNSTokenValue2'
+      TTL: 300
+      Type: CNAME
+  Dkim3Record:
+    Type: AWS::Route53::RecordSet
+    Properties: 
+      HostedZoneId: !GetAtt 'HostedZone.Outputs.Id'
+      Name: !GetAtt 'EmailIdentity.DkimDNSTokenName3'
+      ResourceRecords:
+      - !GetAtt 'EmailIdentity.DkimDNSTokenValue3'
+      TTL: 300
+      Type: CNAME
+  EmailUser:
+    Type: AWS::IAM::User
+    Properties: 
+      Policies: 
+      - PolicyName: ses
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action: 'ses:SendRawEmail'
+            Resource: '*'
+  EmailUserAccessKey:
+    Type: AWS::IAM::AccessKey
+    Properties: 
+      Serial: 1
+      Status: 'Active'
+      UserName: !Ref EmailUser
+  LambdaRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: 'lambda.amazonaws.com'
+          Action: 'sts:AssumeRole'
+  LambdaPolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      Roles:
+      - !Ref LambdaRole
+      PolicyName: lambda
+      PolicyDocument:
+        Statement:
+        - Effect: Allow
+          Action:
+          - 'logs:CreateLogStream'
+          - 'logs:PutLogEvents'
+          Resource: !GetAtt 'LambdaLogGroup.Arn'
+  SmtpPasswordConverterLamdaFunction: # needs no monitoring because it is used as a custom resource
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Code:
+        ZipFile: |
+          'use strict';
+          const response = require('cfn-response');
+          const buffer = require('buffer');
+          const crypto = require('crypto'); 
+          
+          function sign(key, message) {
+            const hmac = crypto.createHmac('sha256', buffer.Buffer.from(key.map((a) => a.charCodeAt(0)))).update(message);
+            return hmac.digest('binary').toString().split('');
+          };
+
+          function calculateSesSmtpPassword(secretAccessKey, region) {
+            const date = '11111111';
+            const service = 'ses';
+            const terminal = 'aws4_request';
+            const message = 'SendRawEmail';
+            const version = [0x04];
+            let signature = sign(`AWS4${secretAccessKey}`.split(''), date);
+            signature = sign(signature, region);
+            signature = sign(signature, service);
+            signature = sign(signature, terminal);
+            signature = sign(signature, message);
+            const signatureAndVersion = version.slice();
+            signature.forEach((a) => signatureAndVersion.push(a.charCodeAt(0)));
+            return buffer.Buffer.from(signatureAndVersion).toString('base64');
+          };
+
+          exports.handler = (event, context, cb) => {
+            const key = event.ResourceProperties.SecretAccessKey;
+            const region = event.ResourceProperties.Region;
+            if (event.RequestType === 'Delete') {
+              response.send(event, context, response.SUCCESS, {});
+            } else if (event.RequestType === 'Create') {
+              response.send(event, context, response.SUCCESS, {SmtpPassword: calculateSesSmtpPassword(key, region)});
+            } else if (event.RequestType === 'Update') {
+              response.send(event, context, response.SUCCESS, {SmtpPassword: calculateSesSmtpPassword(key, region)});
+            } else {
+              response.send(event, context, response.FAILED, {});
+            }
+          };
+      Handler: 'index.handler'
+      MemorySize: 128
+      Role: !GetAtt 'LambdaRole.Arn'
+      Runtime: 'nodejs16.x'
+      Timeout: 60
+  LambdaLogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${SmtpPasswordConverterLamdaFunction}'
+      RetentionInDays: 14
+  SmtpPasswordConverter:
+    Type: 'Custom::SmtpPasswordConverter'
+    DependsOn:
+    - LambdaLogGroup
+    - LambdaPolicy
+    Version: '1.0'
+    Properties:
+      SecretAccessKey: !GetAtt 'EmailUserAccessKey.SecretAccessKey'
+      Region: !Ref 'AWS::Region'
+      ServiceToken: !GetAtt 'SmtpPasswordConverterLamdaFunction.Arn'
