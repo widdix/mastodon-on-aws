@@ -94,38 +94,31 @@ Resources:
         ClientSgModule: !GetAtt 'ClientSg.Outputs.StackName'
         AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
         KmsKeyModule: !GetAtt 'Key.Outputs.StackName'
-        EngineVersion: '5.0.5'
-        CacheNodeType: 'cache.t2.micro'
+        EngineVersion: '5.0.6'
+        CacheNodeType: 'cache.t4g.micro'
         TransitEncryption: 'false'
         AuthToken: ''
         SnapshotRetentionLimit: '35'
         SnapshotName: ''
         NumShards: '1'
-        NumReplicas: '1'
+        NumReplicas: '0'
       TemplateURL: './node_modules/@cfn-modules/elasticache-redis/module.yml'
-  AuroraServerlessCluster:
+  Database:
     Type: 'AWS::CloudFormation::Stack'
     Properties:
       Parameters:
         VpcModule: !GetAtt 'Vpc.Outputs.StackName'
         ClientSgModule: !GetAtt 'ClientSg.Outputs.StackName'
-        KmsKeyModule: !GetAtt 'Key.Outputs.StackName'
         AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
+        KmsKeyModule: !GetAtt 'Key.Outputs.StackName'
         SecretModule: !GetAtt 'Secret.Outputs.StackName'
-        DBSnapshotIdentifier: ''
+        DBAllocatedStorage: '5'
+        DBInstanceClass: 'db.t4g.micro'
         DBName: 'mastodon'
         DBBackupRetentionPeriod: '30'
         DBMasterUsername: 'mastodon'
-        DBMasterUserPassword: '...'
-        PreferredBackupWindow: '09:54-10:24'
-        PreferredMaintenanceWindow: 'sat:07:00-sat:07:30'
-        AutoPause: 'true'
-        SecondsUntilAutoPause: '300'
-        MaxCapacity: '2'
-        MinCapacity: '2'
-        EngineVersion: '10.7'
-        EnableDataApi: 'false'
-      TemplateURL: './node_modules/@cfn-modules/rds-aurora-serverless-postgres/module.yml'
+        EngineVersion: '14.5'
+      TemplateURL: './node_modules/@cfn-modules/rds-postgres/module.yml'
   Cluster:
     Type: 'AWS::CloudFormation::Stack'
     Properties:
@@ -140,7 +133,7 @@ Resources:
         AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
         ClientSgModule1: !GetAtt 'ClientSg.Outputs.StackName'
         ManagedPolicyArns: !Ref S3Policy
-        AppImage: 'tootsuite/mastodon:v3.5.3'
+        AppImage: 'tootsuite/mastodon:v4.0.2'
         AppCommand: 'bash,-c,bundle exec rails db:migrate && bundle exec rails s -p 3000'
         AppPort: '3000'
         AppEnvironment1Key: 'LOCAL_DOMAIN'
@@ -170,7 +163,7 @@ Resources:
         AppEnvironment12Key: 'DB_USER'
         AppEnvironment12Value: 'mastodon'
         AppEnvironment13Key: 'DB_HOST'
-        AppEnvironment13Value: !GetAtt 'AuroraServerlessCluster.Outputs.DnsName'
+        AppEnvironment13Value: !GetAtt 'Database.Outputs.DnsName'
         AppEnvironment14Key: 'RAILS_ENV'
         AppEnvironment14Value: 'production'
         AppEnvironment15Key: 'SMTP_SERVER'
@@ -185,8 +178,8 @@ Resources:
         AppEnvironment19Value: !Sub 'noreply@${DomainName}'
         AppEnvironment20Key: 'S3_REGION'
         AppEnvironment20Value: !Ref 'AWS::Region'
-        Cpu: '1'
-        Memory: '2'
+        Cpu: '0.25'
+        Memory: '0.5'
         DesiredCount: '1'
         MaxCapacity: '1'
         MinCapacity: '1'
@@ -209,7 +202,7 @@ Resources:
         AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
         ClientSgModule1: !GetAtt 'ClientSg.Outputs.StackName'
         ManagedPolicyArns: !Ref S3Policy
-        AppImage: 'tootsuite/mastodon:v3.5.3'
+        AppImage: 'tootsuite/mastodon:v4.0.2'
         AppCommand: 'bash,-c,node ./streaming'
         AppPort: '4000'
         AppEnvironment1Key: 'LOCAL_DOMAIN'
@@ -239,7 +232,7 @@ Resources:
         AppEnvironment12Key: 'DB_USER'
         AppEnvironment12Value: 'mastodon'
         AppEnvironment13Key: 'DB_HOST'
-        AppEnvironment13Value: !GetAtt 'AuroraServerlessCluster.Outputs.DnsName'
+        AppEnvironment13Value: !GetAtt 'Database.Outputs.DnsName'
         AppEnvironment14Key: 'RAILS_ENV'
         AppEnvironment14Value: 'production'
         AppEnvironment15Key: 'SMTP_SERVER'
@@ -254,8 +247,8 @@ Resources:
         AppEnvironment19Value: !Sub 'noreply@${DomainName}'
         AppEnvironment20Key: 'S3_REGION'
         AppEnvironment20Value: !Ref 'AWS::Region'
-        Cpu: '1'
-        Memory: '2'
+        Cpu: '0.25'
+        Memory: '0.5'
         DesiredCount: '1'
         MaxCapacity: '1'
         MinCapacity: '1'
@@ -277,7 +270,7 @@ Resources:
         AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
         ClientSgModule1: !GetAtt 'ClientSg.Outputs.StackName'
         ManagedPolicyArns: !Ref S3Policy
-        AppImage: 'tootsuite/mastodon:v3.5.3'
+        AppImage: 'tootsuite/mastodon:v4.0.2'
         AppCommand: 'bash,-c,bundle exec sidekiq'
         AppEnvironment1Key: 'LOCAL_DOMAIN'
         AppEnvironment1Value: !Ref DomainName
@@ -306,7 +299,7 @@ Resources:
         AppEnvironment12Key: 'DB_USER'
         AppEnvironment12Value: 'mastodon'
         AppEnvironment13Key: 'DB_HOST'
-        AppEnvironment13Value: !GetAtt 'AuroraServerlessCluster.Outputs.DnsName'
+        AppEnvironment13Value: !GetAtt 'Database.Outputs.DnsName'
         AppEnvironment14Key: 'RAILS_ENV'
         AppEnvironment14Value: 'production'
         AppEnvironment15Key: 'SMTP_SERVER'
@@ -321,8 +314,8 @@ Resources:
         AppEnvironment19Value: !Sub 'noreply@${DomainName}'
         AppEnvironment20Key: 'S3_REGION'
         AppEnvironment20Value: !Ref 'AWS::Region'
-        Cpu: '1'
-        Memory: '2'
+        Cpu: '0.25'
+        Memory: '0.5'
         DesiredCount: '1'
         MaxCapacity: '1'
         MinCapacity: '1'
@@ -391,15 +384,6 @@ Resources:
         LoadBalancerModule: !GetAtt 'Alb.Outputs.StackName'
         SubDomainNameWithDot: ''
       TemplateURL: './node_modules/@cfn-modules/lb-dns-record/module.yml'
-  Dashboard:
-    Type: 'AWS::CloudFormation::Stack'
-    Properties:
-      Parameters:
-        DashboardName: 'mastodon-on-aws'
-        AlbModule: !GetAtt 'Alb.Outputs.StackName'
-        FargateServiceModule: !GetAtt 'WebService.Outputs.StackName'
-        RdsAuroraServerlessModule: !GetAtt 'AuroraServerlessCluster.Outputs.StackName'
-      TemplateURL: './node_modules/@cfn-modules/cloudwatch-dashboard/module.yml'
   S3Policy:
     Type: 'AWS::IAM::ManagedPolicy'
     Properties:
@@ -412,13 +396,13 @@ Resources:
           Resource: !Split [',', !GetAtt 'Bucket.Outputs.IamResources']
   EmailIdentity:
     Type: AWS::SES::EmailIdentity
-    Properties: 
-      DkimAttributes: 
+    Properties:
+      DkimAttributes:
         SigningEnabled: true
       EmailIdentity: !Ref DomainName
   Dkim1Record:
     Type: AWS::Route53::RecordSet
-    Properties: 
+    Properties:
       HostedZoneId: !GetAtt 'HostedZone.Outputs.Id'
       Name: !GetAtt 'EmailIdentity.DkimDNSTokenName1'
       ResourceRecords:
@@ -427,7 +411,7 @@ Resources:
       Type: CNAME
   Dkim2Record:
     Type: AWS::Route53::RecordSet
-    Properties: 
+    Properties:
       HostedZoneId: !GetAtt 'HostedZone.Outputs.Id'
       Name: !GetAtt 'EmailIdentity.DkimDNSTokenName2'
       ResourceRecords:
@@ -436,7 +420,7 @@ Resources:
       Type: CNAME
   Dkim3Record:
     Type: AWS::Route53::RecordSet
-    Properties: 
+    Properties:
       HostedZoneId: !GetAtt 'HostedZone.Outputs.Id'
       Name: !GetAtt 'EmailIdentity.DkimDNSTokenName3'
       ResourceRecords:
@@ -445,8 +429,8 @@ Resources:
       Type: CNAME
   EmailUser:
     Type: AWS::IAM::User
-    Properties: 
-      Policies: 
+    Properties:
+      Policies:
       - PolicyName: ses
         PolicyDocument:
           Statement:
@@ -455,7 +439,7 @@ Resources:
             Resource: '*'
   EmailUserAccessKey:
     Type: AWS::IAM::AccessKey
-    Properties: 
+    Properties:
       Serial: 1
       Status: 'Active'
       UserName: !Ref EmailUser
@@ -490,8 +474,8 @@ Resources:
           'use strict';
           const response = require('cfn-response');
           const buffer = require('buffer');
-          const crypto = require('crypto'); 
-          
+          const crypto = require('crypto');
+
           function sign(key, message) {
             const hmac = crypto.createHmac('sha256', buffer.Buffer.from(key.map((a) => a.charCodeAt(0)))).update(message);
             return hmac.digest('binary').toString().split('');
