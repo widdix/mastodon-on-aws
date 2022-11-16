@@ -25,7 +25,7 @@ Second, a top-level or sub domain where you are able to configure a `NS` record 
 
 [Click here to deploy Mastodon on AWS] to your AWS account.
 
-https://console.aws.amazon.com/cloudformation/home?#/stacks/create/review?templateURL=https://s3.eu-central-1.amazonaws.com/mastodon-on-aws-cloudformation/v0.2.0/quickstart.yml&stackName=mastodon-on-aws
+https://console.aws.amazon.com/cloudformation/home?#/stacks/create/review?templateURL=https://s3.eu-central-1.amazonaws.com/mastodon-on-aws-cloudformation/v0.4.0/quickstart.yml&stackName=mastodon-on-aws
 
 ```
 $ docker run -it tootsuite/mastodon:latest sh
