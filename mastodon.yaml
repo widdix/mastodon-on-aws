@@ -6,28 +6,32 @@ Parameters:
     Description: 'The domain name for the Mastodon instance (e.g. social.cloudonaut.io)'
     Type: String
   SecretKeyBase:
-    Description: 'The domain name for the Mastodon instance (e.g. social.cloudonaut.io)'
+    Description: 'Mastodon config SECRET_KEY_BASE (README explains how to gennerate the secret)'
     Type: String
     NoEcho: true
   OtpSecret:
-    Description: 'The domain name for the Mastodon instance (e.g. social.cloudonaut.io)'
+    Description: 'Mastodon config OTP_SECRET (README explains how to gennerate the secret)'
     Type: String
     NoEcho: true
   VapidPrivateKey:
-    Description: 'The domain name for the Mastodon instance (e.g. social.cloudonaut.io)'
+    Description: 'Mastodon config VAPID_PRIVATE_KEY (README explains how to gennerate the key)'
     Type: String
     NoEcho: true
   VapidPublicKey:
-    Description: 'The domain name for the Mastodon instance (e.g. social.cloudonaut.io)'
+    Description: 'Mastodon config VAPID_PUBLIC_KEY (README explains how to gennerate the key)'
     Type: String
     NoEcho: true
   Spot:
-    Description: ''
+    Description: 'Reduce costs and decrease availability by running on Fargate Spot?'
     Type: String
     Default: true
     AllowedValues: [true, false]
   AlertingHttpsEndpoint:
-    Description: 'The domain name for the Mastodon instance (e.g. social.cloudonaut.io)'
+    Description: 'Send infrastructure alarms and notifications to this HTTPS endpoint. (optional)'
+    Type: String
+    Default: ''
+  AlertingEmail:
+    Description: 'Send infrastructure alarms and notifications to this email address. (optional)'
     Type: String
     Default: ''
 Resources:
@@ -36,6 +40,7 @@ Resources:
     Properties:
       Parameters:
         HttpsEndpoint: !Ref AlertingHttpsEndpoint
+        Email: !Ref AlertingEmail
       TemplateURL: './node_modules/@cfn-modules/alerting/module.yml'
   Key:
     Type: 'AWS::CloudFormation::Stack'
