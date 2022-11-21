@@ -17,8 +17,6 @@ The architecture consists of the following building blocks.
 
 ![Mastodon on AWS: Architeture](architecture.png)
 
-> Estimated AWS costs for a small instance with 10 users: $65 per month.
-
 Check out our blog post [Mastodon on AWS: Host your own instance](https://cloudonaut.io/mastodon-on-aws/) for more details.
 
 ## Prerequisites
@@ -97,17 +95,17 @@ RAILS_ENV=production bin/tootctl accounts modify <USERNAME> --role Owner
 
 ## Costs for running Mastodon on AWS
 
-Estimating costs for AWS is not trivial. My estimation assumes a small Mastodon instance for 1-50 users. The architecture's monthly charges are about $60 per month. The following table lists the details (us-east-1).
+Estimating costs for AWS is not trivial. My estimation assumes a small Mastodon instance for 1-50 users. The architecture's monthly charges are about $65 per month. The following table lists the details (us-east-1).
 
 | Service | Configuration | Monthly Costs (USD) |
 | ---------- | ------------- | ----------------------------: |
-| ECS + Fargate | 3 Spot Tasks x (0.25 CPU + 0.5 GB) | $8.66 |
+| ECS + Fargate | 3 Spot Tasks x (0.25 CPU + 0.5 GB) | $11.56 |
 | RDS for Postgres | t4g.micro (Multi-AZ) | $23.61 |
 | ElastiCache for Redis | t4g.micro (Single-AZ) | $11.52 |
 | ALB | Load Balancer Hours | $16.20 |
 | S3 | 25 GB + requests | $0.58 |
 | Route 53 | Hosted Zone | $0.50 |
-| **Total** | | $61.08 |
+| **Total** | | $63.97 |
 
 Please note that the cost estimation is not complete and costs differ per region. For example, the estimation does not include network traffic, CloudWatch, SES, and domain. [Monitor your costs](https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-create.html)!
 
