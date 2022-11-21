@@ -15,31 +15,25 @@ The architecture consists of the following building blocks.
 * KMS
 * Route 53
 
+![Mastodon on AWS: Architeture](architecture.png)
+
+> Estimated AWS costs for a small instance with 10 users: $65 per month.
+
+Check out our blog post [Mastodon on AWS: Host your own instance](https://cloudonaut.io/mastodon-on-aws/) for more details.
+
 ## Prerequisites
 
 First, you need an AWS account.
 
 Second, a top-level or sub domain where you are able to configure a `NS` record to delegate to the Route 53 nameservers is required. For example, you could register a domain with Rout 53 or use an exsisting domain and add an `NS` record to the hosted zone.
 
-## Costs for running Mastodon on AWS
-
-Estimating costs for AWS is not trivial. My estimation assumes a small Mastodon instance for 1-50 users. The architecture's monthly charges are about $60 per month. The following table lists the details (us-east-1).
-
-| Service | Configuration | Monthly Costs (USD) |
-| ---------- | ------------- | ----------------------------: |
-| ECS + Fargate | 3 Spot Tasks x (0.25 CPU + 0.5 GB) | $8.66 |
-| RDS for Postgres | t4g.micro (Multi-AZ) | $23.61 |
-| ElastiCache for Redis | t4g.micro (Single-AZ) | $11.52 |
-| ALB | Load Balancer Hours | $16.20 |
-| S3 | 25 GB + requests | $0.58 |
-| Route 53 | Hosted Zone | $0.50 |
-| **Total** | | $61.08 |
-
-Please note that the cost estimation is not complete and costs differ per region. For example, the estimation does not include network traffic, CloudWatch, SES, and domain. [Monitor your costs](https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-create.html)!
+Third, we recommend to install [Docker Desktop](https://www.docker.com/get-started/) on your local machine to generate the required secerts.
 
 ## Installation
 
-[Click here to deploy Mastodon on AWS](https://console.aws.amazon.com/cloudformation/home?#/stacks/create/review?templateURL=https://s3.eu-central-1.amazonaws.com/mastodon-on-aws-cloudformation/v0.5.0/quickstart.yml&stackName=mastodon-on-aws) to your AWS account.
+### Deploy the infrastructure
+
+[Click here to deploy Mastodon on AWS](https://console.aws.amazon.com/cloudformation/home?#/stacks/create/review?templateURL=https://s3.eu-central-1.amazonaws.com/mastodon-on-aws-cloudformation/v0.6.0/quickstart.yml&stackName=mastodon-on-aws) to your AWS account.
 
 To generate the required secrets and keys use the following commands.
 
@@ -61,12 +55,61 @@ VAPID_PRIVATE_KEY=am3vlPBGQGv7Rl3xOKXSv7lRYyWfZITItb88FXX9IOs=
 VAPID_PUBLIC_KEY=BMGkIr1PaK4v7Kut7q7eoHtWxu9gEBQ5BeV28xOIR9c9VIvDWvOViTn1SV5G2LIEFGWo0f1dQka-UynR58WMn2Y=
 ```
 
-## Administration
+### Configure the domain name
+
+By creating the CloudFormation stack, you also created a Route 53 hosted zone for the `DomainName` you specified as a parameter.
+
+1. Open [Route 53](https://console.aws.amazon.com/route53/v2/home#Dashboard) via the AWS Management Console.
+1. Select `Hosted zones` from the sub navigation.
+1. Search and open the hosted zone with the domain name of your Mastodon instance (`DomainName` parameter).
+1. Search for the `NS` record and copy the name servers (e.g., `ns-52.awsdns-06.com.`, `ns-659.awsdns-18.net.`, `ns-1698.awsdns-20.co.uk.`, and `ns-1034.awsdns-01.org.`).
+
+In case, you are using a top-level domain like `cloudonaut.io` as the `DomainName` for your Mastodon instance, you need to modify the name servers for your domain. See [Adding or changing name servers and glue records for a domain
+](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/domain-name-servers-glue-records.html) in case you are using Route 53 to register domains.
+
+In case, you are using a sub-domain like `social.cloudonaut.io` as the `DomainName` for your Mastodon instance, you need add an `NS` record to the parent zone. In our example, we added the `NS` record `social.cloudonaut` pointing to `ns-52.awsdns-06.com.`, `ns-659.awsdns-18.net.`, `ns-1698.awsdns-20.co.uk.`, and `ns-1034.awsdns-01.org.` to the hosted zone managing `cloudonaut.io`.
+
+### Enable the admin user
+
+Use the following instructions to access the Mastodon CLI:
+
+1. Open Elastic Container Service (ECS) via the AWS Management Console.
+1. Selct the ECS cluster with the name prefixed with the name of your CloudFormation stack (e.g., `mastodon-on-aws-*`).
+1. Note down the full name of the cluster (e.g., `mastodon-on-aws-Cluster-1NHBMI9NL62QP-Cluster-pkxgiUVXxLC7`).
+1. Select the `Tasks` tab.
+1. Search for a task with status `Running` and a task definition containing `*-WebService-*` in its name.
+1. Note down the task ID (e.g., `a752b99a4cf843ce8a957c374fc98abf`).
+1. Install the [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html).
+
+Use the following command to connect with the container running the Ruby on Rails (Web) application. Replace <CLUSTER_NAME> with the name of your ECS cluster and <TASK_ID> with the ID of a running ECS task.
 
 ```
 aws ecs execute-command --cluster <CLUSTER_NAME> --container app --command /bin/bash --interactive --task <TASK_ID>
 ```
 
+After the session got established you are ready to use the [tootctl](https://docs.joinmastodon.org/admin/tootctl/).
+
+After signing up, you will need to use the command line to give your newly created account admin privileges. Replace `<USERNAME>` with your user name (e.g., `andreas`).
+
+```
+RAILS_ENV=production bin/tootctl accounts modify <USERNAME> --role Owner
+```
+
+## Costs for running Mastodon on AWS
+
+Estimating costs for AWS is not trivial. My estimation assumes a small Mastodon instance for 1-50 users. The architecture's monthly charges are about $60 per month. The following table lists the details (us-east-1).
+
+| Service | Configuration | Monthly Costs (USD) |
+| ---------- | ------------- | ----------------------------: |
+| ECS + Fargate | 3 Spot Tasks x (0.25 CPU + 0.5 GB) | $8.66 |
+| RDS for Postgres | t4g.micro (Multi-AZ) | $23.61 |
+| ElastiCache for Redis | t4g.micro (Single-AZ) | $11.52 |
+| ALB | Load Balancer Hours | $16.20 |
+| S3 | 25 GB + requests | $0.58 |
+| Route 53 | Hosted Zone | $0.50 |
+| **Total** | | $61.08 |
+
+Please note that the cost estimation is not complete and costs differ per region. For example, the estimation does not include network traffic, CloudWatch, SES, and domain. [Monitor your costs](https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-create.html)!
 
 ## Development
 
