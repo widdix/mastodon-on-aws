@@ -67,7 +67,7 @@ In case, you are using a top-level domain like `cloudonaut.io` as the `DomainNam
 
 In case, you are using a sub-domain like `social.cloudonaut.io` as the `DomainName` for your Mastodon instance, you need add an `NS` record to the parent zone. In our example, we added the `NS` record `social.cloudonaut` pointing to `ns-52.awsdns-06.com.`, `ns-659.awsdns-18.net.`, `ns-1698.awsdns-20.co.uk.`, and `ns-1034.awsdns-01.org.` to the hosted zone managing `cloudonaut.io`.
 
-### Enable the admin user
+### Enable the admin user / Accessing tootctl
 
 Use the following instructions to access the Mastodon CLI:
 
