@@ -21,6 +21,22 @@ First, you need an AWS account.
 
 Second, a top-level or sub domain where you are able to configure a `NS` record to delegate to the Route 53 nameservers is required. For example, you could register a domain with Rout 53 or use an exsisting domain and add an `NS` record to the hosted zone.
 
+## Costs for running Mastodon on AWS
+
+Estimating costs for AWS is not trivial. My estimation assumes a small Mastodon instance for 1-50 users. The architecture's monthly charges are about $60 per month. The following table lists the details (us-east-1).
+
+| Service | Configuration | Monthly Costs (USD) |
+| ---------- | ------------- | ----------------------------: |
+| ECS + Fargate | 3 Spot Tasks x (0.25 CPU + 0.5 GB) | $8.66 |
+| RDS for Postgres | t4g.micro (Multi-AZ) | $23.61 |
+| ElastiCache for Redis | t4g.micro (Single-AZ) | $11.52 |
+| ALB | Load Balancer Hours | $16.20 |
+| S3 | 25 GB + requests | $0.58 |
+| Route 53 | Hosted Zone | $0.50 |
+| **Total** | | $61.08 |
+
+Please note that the cost estimation is not complete and costs differ per region. For example, the estimation does not include network traffic, CloudWatch, SES, and domain. [Monitor your costs](https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-create.html)!
+
 ## Installation
 
 [Click here to deploy Mastodon on AWS](https://console.aws.amazon.com/cloudformation/home?#/stacks/create/review?templateURL=https://s3.eu-central-1.amazonaws.com/mastodon-on-aws-cloudformation/v0.5.0/quickstart.yml&stackName=mastodon-on-aws) to your AWS account.
