@@ -93,6 +93,10 @@ After signing up, you will need to use the command line to give your newly creat
 RAILS_ENV=production bin/tootctl accounts modify <USERNAME> --role Owner
 ```
 
+### Activating SES
+
+In case you haven't used SES in your AWS account before, you most likely need to request productin access for SES. This is required so that your Mastodon instance is able to send emails (e.g., registration, forgot password, and many more). See [Moving out of the Amazon SES sandbox](https://docs.aws.amazon.com/ses/latest/dg/request-production-access.html) to learn more.
+
 ## Costs for running Mastodon on AWS
 
 Estimating costs for AWS is not trivial. My estimation assumes a small Mastodon instance for 1-50 users. The architecture's monthly charges are about $65 per month. The following table lists the details (us-east-1).
