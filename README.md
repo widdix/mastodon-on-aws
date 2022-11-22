@@ -113,6 +113,16 @@ Estimating costs for AWS is not trivial. My estimation assumes a small Mastodon 
 
 Please note that the cost estimation is not complete and costs differ per region. For example, the estimation does not include network traffic, CloudWatch, SES, and domain. [Monitor your costs](https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-create.html)!
 
+## Update
+
+Here is how you update your infrastructure.
+
+1. Open CloudFormation via the AWS Management Console.
+1. Select the CloudFormation stack which is named `mastodon-on-aws` in case you created the stack with our defaults.
+1. Press the `Edit` button.
+1. Choose the option `Replace current template` with `https://s3.eu-central-1.amazonaws.com/mastodon-on-aws-cloudformation/v0.6.0/quickstart.yml`.
+1. Go through the rest of the wizard and keep the defaults.
+
 ## Development
 
 IaC based on [cfn-modules](https://github.com/cfn-modules/docs).
