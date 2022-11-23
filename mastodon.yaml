@@ -350,8 +350,22 @@ Resources:
         AlbModule: !GetAtt 'Alb.Outputs.StackName'
         Port: '443'
         CertificateArn: !GetAtt 'Certificate.Outputs.Arn'
-        ClientSgModule: ''
       TemplateURL: './node_modules/@cfn-modules/alb-listener/module.yml'
+  HttpListener:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      Parameters:
+        AlbModule: !GetAtt 'Alb.Outputs.StackName'
+        Port: '80'
+      TemplateURL: './node_modules/@cfn-modules/alb-listener/module.yml'
+  Redirect:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      Parameters:
+        AlbListenerModule: !GetAtt 'HttpListener.Outputs.StackName'
+        RedirectPort: '443'
+        Priority: '1'
+      TemplateURL: './node_modules/@cfn-modules/alb-redirect-to-https/module.yml'
   Target:
     Type: 'AWS::CloudFormation::Stack'
     Properties:
