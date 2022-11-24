@@ -31,7 +31,7 @@ Third, we recommend to install [Docker Desktop](https://www.docker.com/get-start
 
 ### Deploy the infrastructure
 
-[Click here to deploy Mastodon on AWS](https://console.aws.amazon.com/cloudformation/home?#/stacks/create/review?templateURL=https://s3.eu-central-1.amazonaws.com/mastodon-on-aws-cloudformation/v0.6.0/quickstart.yml&stackName=mastodon-on-aws) to your AWS account.
+[Click here to deploy Mastodon on AWS](https://console.aws.amazon.com/cloudformation/home?#/stacks/create/review?templateURL=https://s3.eu-central-1.amazonaws.com/mastodon-on-aws-cloudformation/v0.7.0/quickstart.yml&stackName=mastodon-on-aws) to your AWS account.
 
 To generate the required secrets and keys use the following commands.
 
@@ -93,6 +93,10 @@ After signing up, you will need to use the command line to give your newly creat
 RAILS_ENV=production bin/tootctl accounts modify <USERNAME> --role Owner
 ```
 
+### Activating SES
+
+In case you haven't used SES in your AWS account before, you most likely need to request productin access for SES. This is required so that your Mastodon instance is able to send emails (e.g., registration, forgot password, and many more). See [Moving out of the Amazon SES sandbox](https://docs.aws.amazon.com/ses/latest/dg/request-production-access.html) to learn more.
+
 ## Costs for running Mastodon on AWS
 
 Estimating costs for AWS is not trivial. My estimation assumes a small Mastodon instance for 1-50 users. The architecture's monthly charges are about $65 per month. The following table lists the details (us-east-1).
@@ -108,6 +112,16 @@ Estimating costs for AWS is not trivial. My estimation assumes a small Mastodon 
 | **Total** | | $63.97 |
 
 Please note that the cost estimation is not complete and costs differ per region. For example, the estimation does not include network traffic, CloudWatch, SES, and domain. [Monitor your costs](https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-create.html)!
+
+## Update
+
+Here is how you update your infrastructure.
+
+1. Open CloudFormation via the AWS Management Console.
+1. Select the CloudFormation stack which is named `mastodon-on-aws` in case you created the stack with our defaults.
+1. Press the `Edit` button.
+1. Choose the option `Replace current template` with `https://s3.eu-central-1.amazonaws.com/mastodon-on-aws-cloudformation/v0.7.0/quickstart.yml`.
+1. Go through the rest of the wizard and keep the defaults.
 
 ## Development
 
