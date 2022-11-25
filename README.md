@@ -31,7 +31,7 @@ Third, we recommend to install [Docker Desktop](https://www.docker.com/get-start
 
 ### Deploy the infrastructure
 
-[Click here to deploy Mastodon on AWS](https://console.aws.amazon.com/cloudformation/home?#/stacks/create/review?templateURL=https://s3.eu-central-1.amazonaws.com/mastodon-on-aws-cloudformation/v0.7.0/quickstart.yml&stackName=mastodon-on-aws) to your AWS account.
+[Click here to deploy Mastodon on AWS](https://console.aws.amazon.com/cloudformation/home?#/stacks/create/review?templateURL=https://s3.eu-central-1.amazonaws.com/mastodon-on-aws-cloudformation/v0.9.0/quickstart.yml&stackName=mastodon-on-aws) to your AWS account.
 
 To generate the required secrets and keys use the following commands.
 
@@ -103,13 +103,13 @@ Estimating costs for AWS is not trivial. My estimation assumes a small Mastodon 
 
 | Service | Configuration | Monthly Costs (USD) |
 | ---------- | ------------- | ----------------------------: |
-| ECS + Fargate | 3 Spot Tasks x (0.25 CPU + 0.5 GB) | $11.56 |
-| RDS for Postgres | t4g.micro (Multi-AZ) | $23.61 |
-| ElastiCache for Redis | t4g.micro (Single-AZ) | $11.52 |
+| ECS + Fargate | 3 Spot Tasks | $12.08 |
+| RDS for Postgres | t4g.micro | $12.10 |
+| ElastiCache for Redis | t4g.micro | $11.52 |
 | ALB | Load Balancer Hours | $16.20 |
 | S3 | 25 GB + requests | $0.58 |
 | Route 53 | Hosted Zone | $0.50 |
-| **Total** | | $63.97 |
+| **Total** | | $52.97 |
 
 Please note that the cost estimation is not complete and costs differ per region. For example, the estimation does not include network traffic, CloudWatch, SES, and domain. [Monitor your costs](https://docs.aws.amazon.com/cost-management/latest/userguide/budgets-create.html)!
 
@@ -120,7 +120,7 @@ Here is how you update your infrastructure.
 1. Open CloudFormation via the AWS Management Console.
 1. Select the CloudFormation stack which is named `mastodon-on-aws` in case you created the stack with our defaults.
 1. Press the `Edit` button.
-1. Choose the option `Replace current template` with `https://s3.eu-central-1.amazonaws.com/mastodon-on-aws-cloudformation/v0.7.0/quickstart.yml`.
+1. Choose the option `Replace current template` with `https://s3.eu-central-1.amazonaws.com/mastodon-on-aws-cloudformation/v0.9.0/quickstart.yml`.
 1. Go through the rest of the wizard and keep the defaults.
 
 ## Development
