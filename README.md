@@ -23,9 +23,9 @@ Check out our blog post [Mastodon on AWS: Host your own instance](https://cloudo
 
 First, you need an AWS account.
 
-Second, a top-level or sub domain where you are able to configure a `NS` record to delegate to the Route 53 nameservers is required. For example, you could register a domain with Rout 53 or use an exsisting domain and add an `NS` record to the hosted zone.
+Second, a top-level or sub domain where you are able to configure a `NS` record to delegate to the Route 53 nameservers is required. For example, you could register a domain with Rout 53 or use an existing domain and add an `NS` record to the hosted zone.
 
-Third, we recommend to install [Docker Desktop](https://www.docker.com/get-started/) on your local machine to generate the required secerts.
+Third, we recommend to install [Docker Desktop](https://www.docker.com/get-started/) on your local machine to generate the required secrets.
 
 ## Installation
 
@@ -72,7 +72,7 @@ In case, you are using a sub-domain like `social.cloudonaut.io` as the `DomainNa
 Use the following instructions to access the Mastodon CLI:
 
 1. Open Elastic Container Service (ECS) via the AWS Management Console.
-1. Selct the ECS cluster with the name prefixed with the name of your CloudFormation stack (e.g., `mastodon-on-aws-*`).
+1. Select the ECS cluster with the name prefixed with the name of your CloudFormation stack (e.g., `mastodon-on-aws-*`).
 1. Note down the full name of the cluster (e.g., `mastodon-on-aws-Cluster-1NHBMI9NL62QP-Cluster-pkxgiUVXxLC7`).
 1. Select the `Tasks` tab.
 1. Search for a task with status `Running` and a task definition containing `*-WebService-*` in its name.
@@ -95,7 +95,7 @@ RAILS_ENV=production bin/tootctl accounts modify <USERNAME> --role Owner
 
 ### Activating SES
 
-In case you haven't used SES in your AWS account before, you most likely need to request productin access for SES. This is required so that your Mastodon instance is able to send emails (e.g., registration, forgot password, and many more). See [Moving out of the Amazon SES sandbox](https://docs.aws.amazon.com/ses/latest/dg/request-production-access.html) to learn more.
+In case you haven't used SES in your AWS account before, you most likely need to request production access for SES. This is required so that your Mastodon instance is able to send emails (e.g., registration, forgot password, and many more). See [Moving out of the Amazon SES sandbox](https://docs.aws.amazon.com/ses/latest/dg/request-production-access.html) to learn more.
 
 ## Costs for running Mastodon on AWS
 
