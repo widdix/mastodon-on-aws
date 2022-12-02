@@ -334,13 +334,21 @@ Resources:
         OperatingSystemFamily: 'LINUX'
         ExecuteCommand: true
       TemplateURL: './node_modules/@cfn-modules/fargate-service/module.yml'
+  AlbAccessLogBucket:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      Parameters:
+        Access: ElbAccessLogWrite
+        Versioning: 'false'
+        ExpirationInDays: '14'
+      TemplateURL: './node_modules/@cfn-modules/s3-bucket/module.yml'
   Alb:
     Type: 'AWS::CloudFormation::Stack'
     Properties:
       Parameters:
         VpcModule: !GetAtt 'Vpc.Outputs.StackName'
+        BucketModule: !GetAtt 'AlbAccessLogBucket.Outputs.StackName'
         AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
-        BucketModule: ''
         Scheme: 'internet-facing'
         IdleTimeoutInSeconds: '60'
       TemplateURL: './node_modules/@cfn-modules/alb/module.yml'
