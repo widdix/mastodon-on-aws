@@ -9,7 +9,7 @@
     "@cfn-modules/cloudwatch-dashboard": "^1.6.0",
     "@cfn-modules/ecs-alb-target": "^1.4.0",
     "@cfn-modules/ecs-cluster": "^1.1.0",
-    "@cfn-modules/elasticache-redis": "^1.0.1",
+    "@cfn-modules/elasticache-redis": "^1.1.0",
     "@cfn-modules/fargate-service": "^2.13.0",
     "@cfn-modules/kms-key": "^1.2.1",
     "@cfn-modules/lb-dns-record": "^1.0.0",
