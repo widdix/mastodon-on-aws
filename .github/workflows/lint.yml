@@ -1,9 +1,6 @@
 ---
 name: lint
 on: push
-permissions:
-  id-token: write
-  contents: read
 defaults:
   run:
     shell: bash
@@ -11,8 +8,8 @@ jobs:
   lint:
     runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-python@v2
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v4
       with:
         python-version: '3.8'
     - name: cfn-lint
