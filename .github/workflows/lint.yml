@@ -1,0 +1,21 @@
+---
+name: lint
+on: push
+permissions:
+  id-token: write
+  contents: read
+defaults:
+  run:
+    shell: bash
+jobs:
+  lint:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+    - name: cfn-lint
+      run: |
+        pip install cfn-lint==0.72.1
+        cfn-lint -i W3002 -t mastodon.yaml

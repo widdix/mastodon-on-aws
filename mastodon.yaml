@@ -91,6 +91,13 @@ Resources:
         Versioning: 'false'
         Cors: 'AllowAll'
       TemplateURL: './node_modules/@cfn-modules/s3-bucket/module.yml'
+  CacheParameterGroup:
+    Type: 'AWS::ElastiCache::ParameterGroup'
+    Properties:
+      CacheParameterGroupFamily: 'redis5.0'
+      Description: !Ref 'AWS::StackName'
+      Properties:
+        'maxmemory-policy': 'noeviction'
   Cache:
     Type: 'AWS::CloudFormation::Stack'
     Properties:
@@ -107,6 +114,7 @@ Resources:
         SnapshotName: ''
         NumShards: '1'
         NumReplicas: '0'
+        CacheParameterGroupName: !Ref CacheParameterGroup
       TemplateURL: './node_modules/@cfn-modules/elasticache-redis/module.yml'
   Database:
     Type: 'AWS::CloudFormation::Stack'
