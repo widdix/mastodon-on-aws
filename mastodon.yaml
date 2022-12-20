@@ -1,6 +1,6 @@
 ---
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'Mastodon on AWS'
+Description: 'MastodonOnAWS'
 Parameters:
   DomainName:
     Description: 'The domain name for the Mastodon instance (e.g. social.cloudonaut.io)'
