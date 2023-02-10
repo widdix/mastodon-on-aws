@@ -34,6 +34,10 @@ Parameters:
     Description: 'Send infrastructure alarms and notifications to this email address. (optional)'
     Type: String
     Default: ''
+  DatabaseAllocatedStorage:
+    Description: 'Provisioned storage for MySQL database (RDS)'
+    Type: String
+    Default: '5'
 Resources:
   Alerting:
     Type: 'AWS::CloudFormation::Stack'
@@ -87,10 +91,15 @@ Resources:
     Type: 'AWS::CloudFormation::Stack'
     Properties:
       Parameters:
-        Access: PublicRead
+        Access: CloudFrontRead
         Versioning: 'false'
-        Cors: 'AllowAll'
       TemplateURL: './node_modules/@cfn-modules/s3-bucket/module.yml'
+  CloudFront:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      Parameters:
+        OriginBucketModule: !GetAtt 'Bucket.Outputs.StackName'
+      TemplateURL: './node_modules/@cfn-modules/cloudfront/module.yml'
   Cache:
     Type: 'AWS::CloudFormation::Stack'
     Properties:
@@ -117,7 +126,7 @@ Resources:
         AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
         KmsKeyModule: !GetAtt 'Key.Outputs.StackName'
         SecretModule: !GetAtt 'Secret.Outputs.StackName'
-        DBAllocatedStorage: '5'
+        DBAllocatedStorage: !Ref DatabaseAllocatedStorage
         DBInstanceClass: 'db.t4g.micro'
         DBName: 'mastodon'
         DBBackupRetentionPeriod: '30'
@@ -184,6 +193,10 @@ Resources:
         AppEnvironment19Value: !Sub 'noreply@${DomainName}'
         AppEnvironment20Key: 'S3_REGION'
         AppEnvironment20Value: !Ref 'AWS::Region'
+        AppEnvironment21Key: 'S3_ALIAS_HOST'
+        AppEnvironment21Value: !GetAtt 'CloudFront.Outputs.DistributionDomainName'
+        AppEnvironment22Key: 'S3_PERMISSION'
+        AppEnvironment22Value: 'private'
         Cpu: '0.5'
         Memory: '1'
         DesiredCount: '1'
@@ -253,6 +266,10 @@ Resources:
         AppEnvironment19Value: !Sub 'noreply@${DomainName}'
         AppEnvironment20Key: 'S3_REGION'
         AppEnvironment20Value: !Ref 'AWS::Region'
+        AppEnvironment21Key: 'S3_ALIAS_HOST'
+        AppEnvironment21Value: !GetAtt 'CloudFront.Outputs.DistributionDomainName'
+        AppEnvironment22Key: 'S3_PERMISSION'
+        AppEnvironment22Value: 'private'
         Cpu: '0.25'
         Memory: '0.5'
         DesiredCount: '1'
@@ -320,6 +337,10 @@ Resources:
         AppEnvironment19Value: !Sub 'noreply@${DomainName}'
         AppEnvironment20Key: 'S3_REGION'
         AppEnvironment20Value: !Ref 'AWS::Region'
+        AppEnvironment21Key: 'S3_ALIAS_HOST'
+        AppEnvironment21Value: !GetAtt 'CloudFront.Outputs.DistributionDomainName'
+        AppEnvironment22Key: 'S3_PERMISSION'
+        AppEnvironment22Value: 'private'
         Cpu: '0.25'
         Memory: '1'
         DesiredCount: '1'
