@@ -32,7 +32,7 @@ Third, we recommend to install [Docker Desktop](https://www.docker.com/get-start
 
 ### Deploy the infrastructure
 
-[Click here to deploy Mastodon on AWS](https://console.aws.amazon.com/cloudformation/home?#/stacks/create/review?templateURL=https://s3.eu-central-1.amazonaws.com/mastodon-on-aws-cloudformation/v0.10.1/quickstart.yml&stackName=mastodon-on-aws) to your AWS account.
+[Click here to deploy Mastodon on AWS](https://console.aws.amazon.com/cloudformation/home?#/stacks/create/review?templateURL=https://s3.eu-central-1.amazonaws.com/mastodon-on-aws-cloudformation/latest/quickstart.yml&stackName=mastodon-on-aws) to your AWS account.
 
 To generate the required secrets and keys use the following commands.
 
@@ -121,7 +121,7 @@ Here is how you update your infrastructure.
 1. Open CloudFormation via the AWS Management Console.
 1. Select the CloudFormation stack which is named `mastodon-on-aws` in case you created the stack with our defaults.
 1. Press the `Edit` button.
-1. Choose the option `Replace current template` with `https://s3.eu-central-1.amazonaws.com/mastodon-on-aws-cloudformation/v0.10.1/quickstart.yml`.
+1. Choose the option `Replace current template` with `https://s3.eu-central-1.amazonaws.com/mastodon-on-aws-cloudformation/latest/quickstart.yml`.
 1. Go through the rest of the wizard and keep the defaults.
 
 ## Development
