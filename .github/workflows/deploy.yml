@@ -10,6 +10,9 @@ permissions:
 defaults:
   run:
     shell: bash
+concurrency:
+  group: deploy
+  cancel-in-progress: false
 jobs:
   deploy:
     runs-on: ubuntu-22.04
@@ -24,7 +27,8 @@ jobs:
         role-to-assume: arn:aws:iam::730350136264:role/github-openid-connect
         role-session-name: github-actions-mastodon-deploy
         aws-region: eu-central-1
-    - run: |
+    - name: 'Deploy CloudFormation'
+      run: |
         npm ci
         DOMAIN_NAME=$(aws ssm get-parameter --name /mastodon/prod/domain_name --with-decryption --query Parameter.Value --output text)
         SECRET_KEY_BASE=$(aws ssm get-parameter --name /mastodon/prod/secret_key_base --with-decryption --query Parameter.Value --output text)
