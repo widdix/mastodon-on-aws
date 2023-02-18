@@ -34,6 +34,10 @@ Parameters:
     Description: 'Send infrastructure alarms and notifications to this email address. (optional)'
     Type: String
     Default: ''
+  DatabaseAllocatedStorage:
+    Description: 'Provisioned storage for MySQL database (RDS)'
+    Type: String
+    Default: '5'
 Resources:
   Alerting:
     Type: 'AWS::CloudFormation::Stack'
@@ -87,10 +91,15 @@ Resources:
     Type: 'AWS::CloudFormation::Stack'
     Properties:
       Parameters:
-        Access: PublicRead
+        Access: CloudFrontRead
         Versioning: 'false'
-        Cors: 'AllowAll'
       TemplateURL: './node_modules/@cfn-modules/s3-bucket/module.yml'
+  CloudFront:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      Parameters:
+        OriginBucketModule: !GetAtt 'Bucket.Outputs.StackName'
+      TemplateURL: './node_modules/@cfn-modules/cloudfront/module.yml'
   Cache:
     Type: 'AWS::CloudFormation::Stack'
     Properties:
@@ -117,11 +126,12 @@ Resources:
         AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
         KmsKeyModule: !GetAtt 'Key.Outputs.StackName'
         SecretModule: !GetAtt 'Secret.Outputs.StackName'
-        DBAllocatedStorage: '10'
+        DBAllocatedStorage: !Ref DatabaseAllocatedStorage
         DBInstanceClass: 'db.t4g.small'
         DBName: 'mastodon'
         DBBackupRetentionPeriod: '30'
         DBMasterUsername: 'mastodon'
+        DBMultiAZ: 'true'
         EngineVersion: '14.5'
       TemplateURL: './node_modules/@cfn-modules/rds-postgres/module.yml'
   Cluster:
@@ -138,7 +148,7 @@ Resources:
         AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
         ClientSgModule1: !GetAtt 'ClientSg.Outputs.StackName'
         ManagedPolicyArns: !Ref S3Policy
-        AppImage: 'tootsuite/mastodon:v4.0.2'
+        AppImage: 'tootsuite/mastodon:v4.1.0'
         AppCommand: 'bash,-c,bundle exec rails db:migrate && bundle exec rails s -p 3000'
         AppPort: '3000'
         AppEnvironment1Key: 'LOCAL_DOMAIN'
@@ -147,8 +157,8 @@ Resources:
         AppEnvironment2Value: !GetAtt 'Cache.Outputs.DnsName'
         AppEnvironment3Key: 'DB_PASS'
         AppEnvironment3SecretModule: !GetAtt 'Secret.Outputs.StackName'
-        AppEnvironment4Key: 'S3_HOSTNAME'
-        AppEnvironment4Value: !Sub 's3.${AWS::Region}.amazonaws.com'
+        AppEnvironment4Key: 'ES_ENABLED'
+        AppEnvironment4Value: 'false'
         AppEnvironment4SecretModule: ''
         AppEnvironment5Key: 'SECRET_KEY_BASE'
         AppEnvironment5Value: !Ref SecretKeyBase
@@ -183,6 +193,10 @@ Resources:
         AppEnvironment19Value: !Sub 'noreply@${DomainName}'
         AppEnvironment20Key: 'S3_REGION'
         AppEnvironment20Value: !Ref 'AWS::Region'
+        AppEnvironment21Key: 'S3_ALIAS_HOST'
+        AppEnvironment21Value: !GetAtt 'CloudFront.Outputs.DistributionDomainName'
+        AppEnvironment22Key: 'S3_PERMISSION'
+        AppEnvironment22Value: 'private'
         Cpu: '0.5'
         Memory: '1'
         DesiredCount: '1'
@@ -207,7 +221,7 @@ Resources:
         AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
         ClientSgModule1: !GetAtt 'ClientSg.Outputs.StackName'
         ManagedPolicyArns: !Ref S3Policy
-        AppImage: 'tootsuite/mastodon:v4.0.2'
+        AppImage: 'tootsuite/mastodon:v4.1.0'
         AppCommand: 'bash,-c,node ./streaming'
         AppPort: '4000'
         AppEnvironment1Key: 'LOCAL_DOMAIN'
@@ -216,8 +230,8 @@ Resources:
         AppEnvironment2Value: !GetAtt 'Cache.Outputs.DnsName'
         AppEnvironment3Key: 'DB_PASS'
         AppEnvironment3SecretModule: !GetAtt 'Secret.Outputs.StackName'
-        AppEnvironment4Key: 'S3_HOSTNAME'
-        AppEnvironment4Value: !Sub 's3.${AWS::Region}.amazonaws.com'
+        AppEnvironment4Key: 'ES_ENABLED'
+        AppEnvironment4Value: 'false'
         AppEnvironment4SecretModule: ''
         AppEnvironment5Key: 'SECRET_KEY_BASE'
         AppEnvironment5Value: !Ref SecretKeyBase
@@ -252,6 +266,10 @@ Resources:
         AppEnvironment19Value: !Sub 'noreply@${DomainName}'
         AppEnvironment20Key: 'S3_REGION'
         AppEnvironment20Value: !Ref 'AWS::Region'
+        AppEnvironment21Key: 'S3_ALIAS_HOST'
+        AppEnvironment21Value: !GetAtt 'CloudFront.Outputs.DistributionDomainName'
+        AppEnvironment22Key: 'S3_PERMISSION'
+        AppEnvironment22Value: 'private'
         Cpu: '0.25'
         Memory: '0.5'
         DesiredCount: '1'
@@ -275,7 +293,7 @@ Resources:
         AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
         ClientSgModule1: !GetAtt 'ClientSg.Outputs.StackName'
         ManagedPolicyArns: !Ref S3Policy
-        AppImage: 'tootsuite/mastodon:v4.0.2'
+        AppImage: 'tootsuite/mastodon:v4.1.0'
         AppCommand: 'bash,-c,bundle exec sidekiq -q default -q pull -q push -q ingress'
         AppEnvironment1Key: 'LOCAL_DOMAIN'
         AppEnvironment1Value: !Ref DomainName
@@ -283,8 +301,8 @@ Resources:
         AppEnvironment2Value: !GetAtt 'Cache.Outputs.DnsName'
         AppEnvironment3Key: 'DB_PASS'
         AppEnvironment3SecretModule: !GetAtt 'Secret.Outputs.StackName'
-        AppEnvironment4Key: 'S3_HOSTNAME'
-        AppEnvironment4Value: !Sub 's3.${AWS::Region}.amazonaws.com'
+        AppEnvironment4Key: 'ES_ENABLED'
+        AppEnvironment4Value: 'false'
         AppEnvironment4SecretModule: ''
         AppEnvironment5Key: 'SECRET_KEY_BASE'
         AppEnvironment5Value: !Ref SecretKeyBase
@@ -319,6 +337,10 @@ Resources:
         AppEnvironment19Value: !Sub 'noreply@${DomainName}'
         AppEnvironment20Key: 'S3_REGION'
         AppEnvironment20Value: !Ref 'AWS::Region'
+        AppEnvironment21Key: 'S3_ALIAS_HOST'
+        AppEnvironment21Value: !GetAtt 'CloudFront.Outputs.DistributionDomainName'
+        AppEnvironment22Key: 'S3_PERMISSION'
+        AppEnvironment22Value: 'private'
         Cpu: '1'
         Memory: '2'
         DesiredCount: '1'
@@ -342,7 +364,7 @@ Resources:
         AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
         ClientSgModule1: !GetAtt 'ClientSg.Outputs.StackName'
         ManagedPolicyArns: !Ref S3Policy
-        AppImage: 'tootsuite/mastodon:v4.0.2'
+        AppImage: 'tootsuite/mastodon:v4.1.0'
         AppCommand: 'bash,-c,bundle exec sidekiq -q mailers -q scheduler'
         AppEnvironment1Key: 'LOCAL_DOMAIN'
         AppEnvironment1Value: !Ref DomainName
@@ -350,8 +372,8 @@ Resources:
         AppEnvironment2Value: !GetAtt 'Cache.Outputs.DnsName'
         AppEnvironment3Key: 'DB_PASS'
         AppEnvironment3SecretModule: !GetAtt 'Secret.Outputs.StackName'
-        AppEnvironment4Key: 'S3_HOSTNAME'
-        AppEnvironment4Value: !Sub 's3.${AWS::Region}.amazonaws.com'
+        AppEnvironment4Key: 'ES_ENABLED'
+        AppEnvironment4Value: 'false'
         AppEnvironment4SecretModule: ''
         AppEnvironment5Key: 'SECRET_KEY_BASE'
         AppEnvironment5Value: !Ref SecretKeyBase
@@ -386,6 +408,10 @@ Resources:
         AppEnvironment19Value: !Sub 'noreply@${DomainName}'
         AppEnvironment20Key: 'S3_REGION'
         AppEnvironment20Value: !Ref 'AWS::Region'
+        AppEnvironment21Key: 'S3_ALIAS_HOST'
+        AppEnvironment21Value: !GetAtt 'CloudFront.Outputs.DistributionDomainName'
+        AppEnvironment22Key: 'S3_PERMISSION'
+        AppEnvironment22Value: 'private'
         Cpu: '0.25'
         Memory: '0.5'
         DesiredCount: '1'

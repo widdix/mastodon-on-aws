@@ -1,0 +1,40 @@
+---
+name: release
+on:
+  push:
+    branches:
+    - main
+permissions:
+  id-token: write
+  contents: read
+defaults:
+  run:
+    shell: bash
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 16
+        cache: npm
+    - uses: aws-actions/configure-aws-credentials@v1-node16
+      with:
+        role-to-assume: arn:aws:iam::730350136264:role/github-openid-connect
+        role-session-name: github-actions-mastodon-deploy
+        aws-region: eu-central-1
+    - name: 'Deploy CloudFormation'
+      run: |
+        npm ci
+        DOMAIN_NAME=$(aws ssm get-parameter --name /mastodon/prod/domain_name --with-decryption --query Parameter.Value --output text)
+        SECRET_KEY_BASE=$(aws ssm get-parameter --name /mastodon/prod/secret_key_base --with-decryption --query Parameter.Value --output text)
+        OTP_SECRET=$(aws ssm get-parameter --name /mastodon/prod/otp_secret --with-decryption --query Parameter.Value --output text)
+        VAPID_PRIVATE_KEY=$(aws ssm get-parameter --name /mastodon/prod/vapid_private_key --with-decryption --query Parameter.Value --output text)
+        VAPID_PUBLIC_KEY=$(aws ssm get-parameter --name /mastodon/prod/vapid_public_key --with-decryption --query Parameter.Value --output text)
+        ALERTING_HTTPS_ENDPOINT=$(aws ssm get-parameter --name /mastodon/prod/alerting_https_endpoint --with-decryption --query Parameter.Value --output text)
+        aws cloudformation package --template-file mastodon.yaml --s3-bucket cloudformation-widdix-mastodon --output-template-file packaged.yml
+        aws cloudformation deploy --template-file packaged.yml --stack-name cloudonaut-mastodon --capabilities CAPABILITY_IAM --parameter-overrides "DomainName=${DOMAIN_NAME}" "SecretKeyBase=${SECRET_KEY_BASE}" "OtpSecret=${OTP_SECRET}" "VapidPrivateKey=${VAPID_PRIVATE_KEY}" "VapidPublicKey=${VAPID_PUBLIC_KEY}" "AlertingHttpsEndpoint=${ALERTING_HTTPS_ENDPOINT}" "Spot=true" "DatabaseAllocatedStorage=10"

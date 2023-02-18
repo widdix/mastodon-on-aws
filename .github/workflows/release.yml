@@ -26,3 +26,4 @@ jobs:
     - run: 'npm install'
     - run: 'aws cloudformation package --template-file mastodon.yaml --s3-bucket mastodon-on-aws-cloudformation --output-template-file quickstart.yml'
     - run: 'aws s3 cp quickstart.yml s3://mastodon-on-aws-cloudformation/${GITHUB_REF_NAME}/quickstart.yml'
+    - run: 'aws s3 cp quickstart.yml s3://mastodon-on-aws-cloudformation/latest/quickstart.yml'
