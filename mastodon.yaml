@@ -37,7 +37,7 @@ Parameters:
   DatabaseAllocatedStorage:
     Description: 'Provisioned storage for MySQL database (RDS)'
     Type: String
-    Default: '5'
+    Default: '10'
 Resources:
   Alerting:
     Type: 'AWS::CloudFormation::Stack'
@@ -200,7 +200,7 @@ Resources:
         Cpu: '0.5'
         Memory: '1'
         DesiredCount: '1'
-        MaxCapacity: '3'
+        MaxCapacity: '2'
         MinCapacity: '1'
         LogsRetentionInDays: '14'
         SubnetsReach: 'Public'
