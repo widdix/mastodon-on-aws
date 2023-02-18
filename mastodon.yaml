@@ -37,7 +37,7 @@ Parameters:
   DatabaseAllocatedStorage:
     Description: 'Provisioned storage for MySQL database (RDS)'
     Type: String
-    Default: '10'
+    Default: '5'
 Resources:
   Alerting:
     Type: 'AWS::CloudFormation::Stack'
