@@ -38,7 +38,7 @@ To generate the required secrets and keys use the following commands.
 
 ```
 # Start Docker container locally
-$ docker run -it tootsuite/mastodon:latest sh
+$ docker run -it ghcr.io/mastodon/mastodon:latest sh
 
 # Generate SECRET_KEY_BASE
 $ bundle exec rake secret
