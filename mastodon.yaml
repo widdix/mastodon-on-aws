@@ -148,7 +148,7 @@ Resources:
         AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
         ClientSgModule1: !GetAtt 'ClientSg.Outputs.StackName'
         ManagedPolicyArns: !Ref S3Policy
-        AppImage: 'ghcr.io/mastodon/mastodon:v4.1.2'
+        AppImage: 'ghcr.io/mastodon/mastodon:v4.1.4'
         AppCommand: 'bash,-c,bundle exec rails db:migrate && bundle exec rails s -p 3000'
         AppPort: '3000'
         AppEnvironment1Key: 'LOCAL_DOMAIN'
@@ -221,7 +221,7 @@ Resources:
         AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
         ClientSgModule1: !GetAtt 'ClientSg.Outputs.StackName'
         ManagedPolicyArns: !Ref S3Policy
-        AppImage: 'ghcr.io/mastodon/mastodon:v4.1.2'
+        AppImage: 'ghcr.io/mastodon/mastodon:v4.1.4'
         AppCommand: 'bash,-c,node ./streaming'
         AppPort: '4000'
         AppEnvironment1Key: 'LOCAL_DOMAIN'
@@ -293,7 +293,7 @@ Resources:
         AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
         ClientSgModule1: !GetAtt 'ClientSg.Outputs.StackName'
         ManagedPolicyArns: !Ref S3Policy
-        AppImage: 'ghcr.io/mastodon/mastodon:v4.1.2'
+        AppImage: 'ghcr.io/mastodon/mastodon:v4.1.4'
         AppCommand: 'bash,-c,bundle exec sidekiq'
         AppEnvironment1Key: 'LOCAL_DOMAIN'
         AppEnvironment1Value: !Ref DomainName
