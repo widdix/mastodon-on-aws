@@ -11,7 +11,7 @@ defaults:
     shell: bash
 jobs:
   release:
-    runs-on: ubuntu-22.04
+    runs-on: ['hyperenv', 'medium']
     steps:
     - uses: actions/checkout@v3
     - uses: actions/setup-node@v3
