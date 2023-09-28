@@ -138,7 +138,7 @@ Resources:
     Type: 'AWS::CloudFormation::Stack'
     Properties:
       Parameters:
-        ContainerInsights: 'enable'
+        ContainerInsights: 'enabled'
       TemplateURL: './node_modules/@cfn-modules/ecs-cluster/module.yml'
   WebService:
     Type: 'AWS::CloudFormation::Stack'
