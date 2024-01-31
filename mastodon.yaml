@@ -43,6 +43,10 @@ Parameters:
     Type: String
     Default: enabled
     AllowedValues: [enabled, disabled]
+  DatabaseBackupRetentionPeriod:
+    Description: 'Number of days to keep automated snapshots'
+    Type: Number
+    Default: 30
 Resources:
   Alerting:
     Type: 'AWS::CloudFormation::Stack'
@@ -134,7 +138,7 @@ Resources:
         DBAllocatedStorage: !Ref DatabaseAllocatedStorage
         DBInstanceClass: 'db.t4g.micro'
         DBName: 'mastodon'
-        DBBackupRetentionPeriod: '30'
+        DBBackupRetentionPeriod: !Ref DatabaseBackupRetentionPeriod
         DBMasterUsername: 'mastodon'
         DBMultiAZ: 'false'
         EngineVersion: '14.5'
