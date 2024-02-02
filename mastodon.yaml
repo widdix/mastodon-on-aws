@@ -424,7 +424,7 @@ Resources:
         AppEnvironment22Key: 'S3_PERMISSION'
         AppEnvironment22Value: 'private'
         Cpu: '1'
-        Memory: '1'
+        Memory: '2'
         LogsRetentionInDays: '14'
         SubnetsReach: 'Public'
         ScheduleExpression: 'rate(24 hours)'
