@@ -23,5 +23,5 @@
     "@cfn-modules/ssh-bastion": "^1.4.4",
     "@cfn-modules/vpc": "^1.3.2"
   },
-  "version": "0.17.0"
+  "version": "0.18.0"
 }
