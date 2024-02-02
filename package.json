@@ -6,10 +6,12 @@
     "@cfn-modules/alb-redirect-to-https": "^1.0.1",
     "@cfn-modules/alerting": "^1.2.2",
     "@cfn-modules/client-sg": "^1.0.0",
+    "@cfn-modules/cloudfront": "^1.0.0",
     "@cfn-modules/cloudwatch-dashboard": "^1.6.0",
     "@cfn-modules/ecs-alb-target": "^1.4.0",
     "@cfn-modules/ecs-cluster": "^1.2.0",
     "@cfn-modules/elasticache-redis": "^1.0.1",
+    "@cfn-modules/fargate-scheduled-task": "^1.6.0",
     "@cfn-modules/fargate-service": "^2.14.0",
     "@cfn-modules/kms-key": "^1.2.1",
     "@cfn-modules/lb-dns-record": "^1.0.0",
@@ -19,8 +21,7 @@
     "@cfn-modules/s3-bucket": "^1.8.0",
     "@cfn-modules/secret": "^1.3.0",
     "@cfn-modules/ssh-bastion": "^1.4.4",
-    "@cfn-modules/vpc": "^1.3.2",
-    "@cfn-modules/cloudfront": "^1.0.0"
+    "@cfn-modules/vpc": "^1.3.2"
   },
   "version": "0.17.0"
 }
