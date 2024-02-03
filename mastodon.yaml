@@ -214,7 +214,7 @@ Resources:
         MaxCapacity: '1'
         MinCapacity: '1'
         LogsRetentionInDays: '14'
-        SubnetsReach: 'Public'
+        SubnetsReach: 'Private'
         AutoScaling: 'false'
         HealthCheckGracePeriodSeconds: '60'
         Spot: !Ref Spot
@@ -287,7 +287,7 @@ Resources:
         MaxCapacity: '1'
         MinCapacity: '1'
         LogsRetentionInDays: '14'
-        SubnetsReach: 'Public'
+        SubnetsReach: 'Private'
         AutoScaling: 'false'
         HealthCheckGracePeriodSeconds: '60'
         Spot: !Ref Spot
