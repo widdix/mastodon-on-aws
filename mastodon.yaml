@@ -160,7 +160,7 @@ Resources:
         AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
         ClientSgModule1: !GetAtt 'ClientSg.Outputs.StackName'
         ManagedPolicyArns: !Ref S3Policy
-        AppImage: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/github/mastodon:v4.2.5'
+        AppImage: 'public.ecr.aws/h6i3a8b9/mastodon:v4.2.5'
         AppCommand: 'bash,-c,bundle exec rails db:migrate && bundle exec rails s -p 3000'
         AppPort: '3000'
         AppEnvironment1Key: 'LOCAL_DOMAIN'
@@ -233,7 +233,7 @@ Resources:
         AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
         ClientSgModule1: !GetAtt 'ClientSg.Outputs.StackName'
         ManagedPolicyArns: !Ref S3Policy
-        AppImage: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/github/mastodon:v4.2.5'
+        AppImage: 'public.ecr.aws/h6i3a8b9/mastodon:v4.2.5'
         AppCommand: 'bash,-c,node ./streaming'
         AppPort: '4000'
         AppEnvironment1Key: 'LOCAL_DOMAIN'
@@ -305,7 +305,7 @@ Resources:
         AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
         ClientSgModule1: !GetAtt 'ClientSg.Outputs.StackName'
         ManagedPolicyArns: !Ref S3Policy
-        AppImage: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/github/mastodon:v4.2.5'
+        AppImage: 'public.ecr.aws/h6i3a8b9/mastodon:v4.2.5'
         AppCommand: 'bash,-c,bundle exec sidekiq'
         AppEnvironment1Key: 'LOCAL_DOMAIN'
         AppEnvironment1Value: !Ref DomainName
@@ -376,7 +376,7 @@ Resources:
         AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
         ClientSgModule1: !GetAtt 'ClientSg.Outputs.StackName'
         ManagedPolicyArns: !Ref S3Policy
-        AppImage: !Sub '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/github/mastodon:v4.2.5'
+        AppImage: 'public.ecr.aws/h6i3a8b9/mastodon:v4.2.5'
         AppCommand: 'bash,-c,RAILS_ENV=production bin/tootctl media remove && RAILS_ENV=production bin/tootctl preview_cards remove'
         AppEnvironment1Key: 'LOCAL_DOMAIN'
         AppEnvironment1Value: !Ref DomainName
@@ -657,8 +657,3 @@ Resources:
       SecretAccessKey: !GetAtt 'EmailUserAccessKey.SecretAccessKey'
       Region: !Ref 'AWS::Region'
       ServiceToken: !GetAtt 'SmtpPasswordConverterLamdaFunction.Arn'
-  GitHubPullThroughCacheRule:
-    Type: AWS::ECR::PullThroughCacheRule
-    Properties:
-      EcrRepositoryPrefix: 'github'
-      UpstreamRegistryUrl: 'ghcr.io'
