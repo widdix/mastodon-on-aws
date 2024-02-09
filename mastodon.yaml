@@ -144,7 +144,6 @@ Resources:
         EngineVersion: '14.5'
       TemplateURL: './node_modules/@cfn-modules/rds-postgres/module.yml'
   Cluster:
-    DependsOn: GitHubPullThroughCacheRule
     Type: 'AWS::CloudFormation::Stack'
     Properties:
       Parameters:
