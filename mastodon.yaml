@@ -218,7 +218,7 @@ Resources:
         AutoScaling: 'false'
         HealthCheckGracePeriodSeconds: '60'
         Spot: !Ref Spot
-        CpuArchitecture: 'X86_64'
+        CpuArchitecture: 'ARM64'
         OperatingSystemFamily: 'LINUX'
         ExecuteCommand: true
       TemplateURL: './node_modules/@cfn-modules/fargate-service/module.yml'
@@ -291,7 +291,7 @@ Resources:
         AutoScaling: 'false'
         HealthCheckGracePeriodSeconds: '60'
         Spot: !Ref Spot
-        CpuArchitecture: 'X86_64'
+        CpuArchitecture: 'ARM64'
         OperatingSystemFamily: 'LINUX'
         ExecuteCommand: true
       TemplateURL: './node_modules/@cfn-modules/fargate-service/module.yml'
@@ -362,7 +362,7 @@ Resources:
         AutoScaling: 'false'
         HealthCheckGracePeriodSeconds: '60'
         Spot: !Ref Spot
-        CpuArchitecture: 'X86_64'
+        CpuArchitecture: 'ARM64'
         OperatingSystemFamily: 'LINUX'
         ExecuteCommand: true
       TemplateURL: './node_modules/@cfn-modules/fargate-service/module.yml'
@@ -429,7 +429,7 @@ Resources:
         SubnetsReach: 'Public'
         ScheduleExpression: 'rate(24 hours)'
         Timeout: '3600'
-        CpuArchitecture: 'X86_64'
+        CpuArchitecture: 'ARM64'
         OperatingSystemFamily: 'LINUX'
       TemplateURL: './node_modules/@cfn-modules/fargate-scheduled-task/module.yml'
   AlbAccessLogBucket:
