@@ -223,6 +223,8 @@ Resources:
         ExecuteCommand: true
       TemplateURL: './node_modules/@cfn-modules/fargate-service/module.yml'
   StreamingApiService:
+    DependsOn:
+    - WebService
     Type: 'AWS::CloudFormation::Stack'
     Properties:
       Parameters:
@@ -296,6 +298,8 @@ Resources:
         ExecuteCommand: true
       TemplateURL: './node_modules/@cfn-modules/fargate-service/module.yml'
   SidekiqService:
+    DependsOn:
+    - WebService
     Type: 'AWS::CloudFormation::Stack'
     Properties:
       Parameters:
@@ -367,6 +371,8 @@ Resources:
         ExecuteCommand: true
       TemplateURL: './node_modules/@cfn-modules/fargate-service/module.yml'
   ScheduledTask:
+    DependsOn:
+    - WebService
     Type: 'AWS::CloudFormation::Stack'
     Properties:
       Parameters:
