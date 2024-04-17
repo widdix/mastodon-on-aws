@@ -138,7 +138,7 @@ Push Mastodon container image to ECR Public.
 
 ```
 MASTODON_VERSION="v4.2.7"
-docker pull --platform linux/arm64 ghcr.io/mastodon/mastodon:${MASTODON_VERSION}
+docker pull --platform linux/amd64 ghcr.io/mastodon/mastodon:${MASTODON_VERSION}
 docker image tag ghcr.io/mastodon/mastodon:${MASTODON_VERSION} public.ecr.aws/h6i3a8b9/mastodon:${MASTODON_VERSION}
 aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/h6i3a8b9
 docker push public.ecr.aws/h6i3a8b9/mastodon:${MASTODON_VERSION}
