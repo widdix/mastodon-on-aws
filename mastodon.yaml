@@ -141,7 +141,7 @@ Resources:
         DBBackupRetentionPeriod: !Ref DatabaseBackupRetentionPeriod
         DBMasterUsername: 'mastodon'
         DBMultiAZ: 'false'
-        EngineVersion: '14.5'
+        EngineVersion: '15'
       TemplateURL: './node_modules/@cfn-modules/rds-postgres/module.yml'
   Cluster:
     Type: 'AWS::CloudFormation::Stack'
@@ -159,7 +159,7 @@ Resources:
         AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
         ClientSgModule1: !GetAtt 'ClientSg.Outputs.StackName'
         ManagedPolicyArns: !Ref S3Policy
-        AppImage: 'public.ecr.aws/h6i3a8b9/mastodon:v4.2.8'
+        AppImage: 'public.ecr.aws/h6i3a8b9/mastodon:v4.2.10'
         AppCommand: 'bash,-c,bundle exec rails db:migrate && bundle exec rails s -p 3000'
         AppPort: '3000'
         AppEnvironment1Key: 'LOCAL_DOMAIN'
@@ -234,7 +234,7 @@ Resources:
         AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
         ClientSgModule1: !GetAtt 'ClientSg.Outputs.StackName'
         ManagedPolicyArns: !Ref S3Policy
-        AppImage: 'public.ecr.aws/h6i3a8b9/mastodon:v4.2.8'
+        AppImage: 'public.ecr.aws/h6i3a8b9/mastodon:v4.2.10'
         AppCommand: 'bash,-c,node ./streaming'
         AppPort: '4000'
         AppEnvironment1Key: 'LOCAL_DOMAIN'
@@ -308,7 +308,7 @@ Resources:
         AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
         ClientSgModule1: !GetAtt 'ClientSg.Outputs.StackName'
         ManagedPolicyArns: !Ref S3Policy
-        AppImage: 'public.ecr.aws/h6i3a8b9/mastodon:v4.2.8'
+        AppImage: 'public.ecr.aws/h6i3a8b9/mastodon:v4.2.10'
         AppCommand: 'bash,-c,bundle exec sidekiq'
         AppEnvironment1Key: 'LOCAL_DOMAIN'
         AppEnvironment1Value: !Ref DomainName
@@ -381,7 +381,7 @@ Resources:
         AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
         ClientSgModule1: !GetAtt 'ClientSg.Outputs.StackName'
         ManagedPolicyArns: !Ref S3Policy
-        AppImage: 'public.ecr.aws/h6i3a8b9/mastodon:v4.2.8'
+        AppImage: 'public.ecr.aws/h6i3a8b9/mastodon:v4.2.10'
         AppCommand: 'bash,-c,RAILS_ENV=production bin/tootctl media remove && RAILS_ENV=production bin/tootctl preview_cards remove'
         AppEnvironment1Key: 'LOCAL_DOMAIN'
         AppEnvironment1Value: !Ref DomainName
