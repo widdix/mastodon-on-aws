@@ -21,6 +21,18 @@ Parameters:
     Description: 'Mastodon config VAPID_PUBLIC_KEY (README explains how to gennerate the key)'
     Type: String
     NoEcho: true
+  ActiveRecordEncryptionDeterministicKey:
+    Description: 'Mastodon config ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY (README explains how to gennerate the key)'
+    Type: String
+    NoEcho: true
+  ActiveRecordEncryptionKeyDerivationSalt:
+    Description: 'Mastodon config ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT (README explains how to gennerate the key)'
+    Type: String
+    NoEcho: true
+  ActiveRecordEncryptionPrimaryKey:
+    Description: 'Mastodon config ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY (README explains how to gennerate the key)'
+    Type: String
+    NoEcho: true
   Spot:
     Description: 'Reduce costs and decrease availability by running on Fargate Spot?'
     Type: String
@@ -208,6 +220,12 @@ Resources:
         AppEnvironment21Value: !GetAtt 'CloudFront.Outputs.DistributionDomainName'
         AppEnvironment22Key: 'S3_PERMISSION'
         AppEnvironment22Value: 'private'
+        AppEnvironment23Key: 'ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY'
+        AppEnvironment23Value: !Ref ActiveRecordEncryptionDeterministicKey
+        AppEnvironment24Key: 'ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT'
+        AppEnvironment24Value: !Ref ActiveRecordEncryptionKeyDerivationSalt
+        AppEnvironment25Key: 'ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY'
+        AppEnvironment25Value: !Ref ActiveRecordEncryptionPrimaryKey
         Cpu: '0.5'
         Memory: '1'
         DesiredCount: '1'
@@ -283,6 +301,12 @@ Resources:
         AppEnvironment21Value: !GetAtt 'CloudFront.Outputs.DistributionDomainName'
         AppEnvironment22Key: 'S3_PERMISSION'
         AppEnvironment22Value: 'private'
+        AppEnvironment23Key: 'ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY'
+        AppEnvironment23Value: !Ref ActiveRecordEncryptionDeterministicKey
+        AppEnvironment24Key: 'ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT'
+        AppEnvironment24Value: !Ref ActiveRecordEncryptionKeyDerivationSalt
+        AppEnvironment25Key: 'ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY'
+        AppEnvironment25Value: !Ref ActiveRecordEncryptionPrimaryKey
         Cpu: '0.25'
         Memory: '0.5'
         DesiredCount: '1'
@@ -356,6 +380,12 @@ Resources:
         AppEnvironment21Value: !GetAtt 'CloudFront.Outputs.DistributionDomainName'
         AppEnvironment22Key: 'S3_PERMISSION'
         AppEnvironment22Value: 'private'
+        AppEnvironment23Key: 'ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY'
+        AppEnvironment23Value: !Ref ActiveRecordEncryptionDeterministicKey
+        AppEnvironment24Key: 'ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT'
+        AppEnvironment24Value: !Ref ActiveRecordEncryptionKeyDerivationSalt
+        AppEnvironment25Key: 'ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY'
+        AppEnvironment25Value: !Ref ActiveRecordEncryptionPrimaryKey
         Cpu: '0.25'
         Memory: '1'
         DesiredCount: '1'
@@ -429,6 +459,12 @@ Resources:
         AppEnvironment21Value: !GetAtt 'CloudFront.Outputs.DistributionDomainName'
         AppEnvironment22Key: 'S3_PERMISSION'
         AppEnvironment22Value: 'private'
+        AppEnvironment23Key: 'ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY'
+        AppEnvironment23Value: !Ref ActiveRecordEncryptionDeterministicKey
+        AppEnvironment24Key: 'ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT'
+        AppEnvironment24Value: !Ref ActiveRecordEncryptionKeyDerivationSalt
+        AppEnvironment25Key: 'ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY'
+        AppEnvironment25Value: !Ref ActiveRecordEncryptionPrimaryKey
         Cpu: '1'
         Memory: '2'
         LogsRetentionInDays: '14'
