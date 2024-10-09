@@ -252,8 +252,8 @@ Resources:
         AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
         ClientSgModule1: !GetAtt 'ClientSg.Outputs.StackName'
         ManagedPolicyArns: !Ref S3Policy
-        AppImage: 'public.ecr.aws/h6i3a8b9/mastodon:v4.3.0'
-        AppCommand: 'bash,-c,node ./streaming'
+        AppImage: 'public.ecr.aws/h6i3a8b9/mastodon-streaming:v4.3.0'
+        AppCommand: 'bash,-c,node ./streaming/index.js'
         AppPort: '4000'
         AppEnvironment1Key: 'LOCAL_DOMAIN'
         AppEnvironment1Value: !Ref DomainName
