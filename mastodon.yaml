@@ -138,6 +138,17 @@ Resources:
         NumShards: '1'
         NumReplicas: '0'
       TemplateURL: './node_modules/@cfn-modules/elasticache-redis/module.yml'
+  ServerlessCache:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      Parameters:
+        VpcModule: !GetAtt 'Vpc.Outputs.StackName'
+        ClientSgModule: !GetAtt 'ClientSg.Outputs.StackName'
+        AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
+        KmsKeyModule: !GetAtt 'Key.Outputs.StackName'
+        SnapshotRetentionLimit: '35'
+        CacheName: !Ref 'AWS::StackName'
+      TemplateURL: './node_modules/@cfn-modules/elasticache-serverless/module.yml'
   Database:
     Type: 'AWS::CloudFormation::Stack'
     Properties:
