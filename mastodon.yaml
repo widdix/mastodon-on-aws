@@ -177,7 +177,7 @@ Resources:
         AppEnvironment1Key: 'LOCAL_DOMAIN'
         AppEnvironment1Value: !Ref DomainName
         AppEnvironment2Key: 'REDIS_HOST'
-        AppEnvironment2Value: !GetAtt 'ServerlessCache.Outputs.DnsName'
+        AppEnvironment2Value: !GetAtt 'Cache.Outputs.DnsName'
         AppEnvironment3Key: 'DB_PASS'
         AppEnvironment3SecretModule: !GetAtt 'Secret.Outputs.StackName'
         AppEnvironment4Key: 'ES_ENABLED'
@@ -258,7 +258,7 @@ Resources:
         AppEnvironment1Key: 'LOCAL_DOMAIN'
         AppEnvironment1Value: !Ref DomainName
         AppEnvironment2Key: 'REDIS_HOST'
-        AppEnvironment2Value: !GetAtt 'ServerlessCache.Outputs.DnsName'
+        AppEnvironment2Value: !GetAtt 'Cache.Outputs.DnsName'
         AppEnvironment3Key: 'DB_PASS'
         AppEnvironment3SecretModule: !GetAtt 'Secret.Outputs.StackName'
         AppEnvironment4Key: 'ES_ENABLED'
@@ -337,7 +337,7 @@ Resources:
         AppEnvironment1Key: 'LOCAL_DOMAIN'
         AppEnvironment1Value: !Ref DomainName
         AppEnvironment2Key: 'REDIS_HOST'
-        AppEnvironment2Value: !GetAtt 'ServerlessCache.Outputs.DnsName'
+        AppEnvironment2Value: !GetAtt 'Cache.Outputs.DnsName'
         AppEnvironment3Key: 'DB_PASS'
         AppEnvironment3SecretModule: !GetAtt 'Secret.Outputs.StackName'
         AppEnvironment4Key: 'ES_ENABLED'
@@ -416,7 +416,7 @@ Resources:
         AppEnvironment1Key: 'LOCAL_DOMAIN'
         AppEnvironment1Value: !Ref DomainName
         AppEnvironment2Key: 'REDIS_HOST'
-        AppEnvironment2Value: !GetAtt 'ServerlessCache.Outputs.DnsName'
+        AppEnvironment2Value: !GetAtt 'Cache.Outputs.DnsName'
         AppEnvironment3Key: 'DB_PASS'
         AppEnvironment3SecretModule: !GetAtt 'Secret.Outputs.StackName'
         AppEnvironment4Key: 'ES_ENABLED'

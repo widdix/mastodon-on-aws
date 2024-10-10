@@ -130,6 +130,19 @@ Here is how you update your infrastructure.
 1. Choose the option `Replace current template` with `https://s3.eu-central-1.amazonaws.com/mastodon-on-aws-cloudformation/latest/quickstart.yml`.
 1. Go through the rest of the wizard and keep the defaults.
 
+### v0.24.0
+
+Upgrading to Mastodon 4.3 requires to set three new CloudFormation parameters:
+
+```
+ActiveRecordEncryptionDeterministicKey
+ActiveRecordEncryptionKeyDerivationSalt
+ActiveRecordEncryptionPrimaryKey
+```
+
+Create the values for those parameters as described above (see [Installation](#Installation) instructions).
+
+
 ## Development
 
 IaC based on [cfn-modules](https://github.com/cfn-modules/docs).
