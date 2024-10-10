@@ -144,7 +144,7 @@ Resources:
       Parameters:
         VpcModule: !GetAtt 'Vpc.Outputs.StackName'
         ClientSgModule: !GetAtt 'ClientSg.Outputs.StackName'
-        AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
+        # AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
         KmsKeyModule: !GetAtt 'Key.Outputs.StackName'
         SnapshotRetentionLimit: '35'
         CacheName: !Ref 'AWS::StackName'
