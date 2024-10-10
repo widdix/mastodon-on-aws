@@ -138,17 +138,6 @@ Resources:
         NumShards: '1'
         NumReplicas: '0'
       TemplateURL: './node_modules/@cfn-modules/elasticache-redis/module.yml'
-  ServerlessCache:
-    Type: 'AWS::CloudFormation::Stack'
-    Properties:
-      Parameters:
-        VpcModule: !GetAtt 'Vpc.Outputs.StackName'
-        ClientSgModule: !GetAtt 'ClientSg.Outputs.StackName'
-        # AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
-        KmsKeyModule: !GetAtt 'Key.Outputs.StackName'
-        SnapshotRetentionLimit: '35'
-        CacheName: !Ref 'AWS::StackName'
-      TemplateURL: './node_modules/@cfn-modules/elasticache-serverless/module.yml'
   Database:
     Type: 'AWS::CloudFormation::Stack'
     Properties:
@@ -187,8 +176,8 @@ Resources:
         AppPort: '3000'
         AppEnvironment1Key: 'LOCAL_DOMAIN'
         AppEnvironment1Value: !Ref DomainName
-        AppEnvironment2Key: 'REDIS_URL'
-        AppEnvironment2Value: !Sub 'rediss://${ServerlessCache.Outputs.DnsName}:6379/0'
+        AppEnvironment2Key: 'REDIS_HOST'
+        AppEnvironment2Value: !GetAtt 'ServerlessCache.Outputs.DnsName'
         AppEnvironment3Key: 'DB_PASS'
         AppEnvironment3SecretModule: !GetAtt 'Secret.Outputs.StackName'
         AppEnvironment4Key: 'ES_ENABLED'
@@ -237,8 +226,6 @@ Resources:
         AppEnvironment24Value: !Ref ActiveRecordEncryptionKeyDerivationSalt
         AppEnvironment25Key: 'ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY'
         AppEnvironment25Value: !Ref ActiveRecordEncryptionPrimaryKey
-        AppEnvironment26Key: 'REDIS_DRIVER'
-        AppEnvironment26Value: 'ruby'
         Cpu: '0.5'
         Memory: '1'
         DesiredCount: '1'
@@ -270,8 +257,8 @@ Resources:
         AppPort: '4000'
         AppEnvironment1Key: 'LOCAL_DOMAIN'
         AppEnvironment1Value: !Ref DomainName
-        AppEnvironment2Key: 'REDIS_URL'
-        AppEnvironment2Value: !Sub 'rediss://${ServerlessCache.Outputs.DnsName}:6379/0'
+        AppEnvironment2Key: 'REDIS_HOST'
+        AppEnvironment2Value: !GetAtt 'ServerlessCache.Outputs.DnsName'
         AppEnvironment3Key: 'DB_PASS'
         AppEnvironment3SecretModule: !GetAtt 'Secret.Outputs.StackName'
         AppEnvironment4Key: 'ES_ENABLED'
@@ -320,8 +307,6 @@ Resources:
         AppEnvironment24Value: !Ref ActiveRecordEncryptionKeyDerivationSalt
         AppEnvironment25Key: 'ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY'
         AppEnvironment25Value: !Ref ActiveRecordEncryptionPrimaryKey
-        AppEnvironment26Key: 'REDIS_DRIVER'
-        AppEnvironment26Value: 'ruby'
         Cpu: '0.25'
         Memory: '0.5'
         DesiredCount: '1'
@@ -351,8 +336,8 @@ Resources:
         AppCommand: 'bash,-c,bundle exec sidekiq'
         AppEnvironment1Key: 'LOCAL_DOMAIN'
         AppEnvironment1Value: !Ref DomainName
-        AppEnvironment2Key: 'REDIS_URL'
-        AppEnvironment2Value: !Sub 'rediss://${ServerlessCache.Outputs.DnsName}:6379/0'
+        AppEnvironment2Key: 'REDIS_HOST'
+        AppEnvironment2Value: !GetAtt 'ServerlessCache.Outputs.DnsName'
         AppEnvironment3Key: 'DB_PASS'
         AppEnvironment3SecretModule: !GetAtt 'Secret.Outputs.StackName'
         AppEnvironment4Key: 'ES_ENABLED'
@@ -401,8 +386,6 @@ Resources:
         AppEnvironment24Value: !Ref ActiveRecordEncryptionKeyDerivationSalt
         AppEnvironment25Key: 'ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY'
         AppEnvironment25Value: !Ref ActiveRecordEncryptionPrimaryKey
-        AppEnvironment26Key: 'REDIS_DRIVER'
-        AppEnvironment26Value: 'ruby'
         Cpu: '0.25'
         Memory: '1'
         DesiredCount: '1'
@@ -432,8 +415,8 @@ Resources:
         AppCommand: 'bash,-c,RAILS_ENV=production bin/tootctl media remove && RAILS_ENV=production bin/tootctl preview_cards remove'
         AppEnvironment1Key: 'LOCAL_DOMAIN'
         AppEnvironment1Value: !Ref DomainName
-        AppEnvironment2Key: 'REDIS_URL'
-        AppEnvironment2Value: !Sub 'rediss://${ServerlessCache.Outputs.DnsName}:6379/0'
+        AppEnvironment2Key: 'REDIS_HOST'
+        AppEnvironment2Value: !GetAtt 'ServerlessCache.Outputs.DnsName'
         AppEnvironment3Key: 'DB_PASS'
         AppEnvironment3SecretModule: !GetAtt 'Secret.Outputs.StackName'
         AppEnvironment4Key: 'ES_ENABLED'
@@ -482,8 +465,6 @@ Resources:
         AppEnvironment24Value: !Ref ActiveRecordEncryptionKeyDerivationSalt
         AppEnvironment25Key: 'ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY'
         AppEnvironment25Value: !Ref ActiveRecordEncryptionPrimaryKey
-        AppEnvironment26Key: 'REDIS_DRIVER'
-        AppEnvironment26Value: 'ruby'
         Cpu: '1'
         Memory: '2'
         LogsRetentionInDays: '14'

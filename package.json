@@ -11,7 +11,6 @@
     "@cfn-modules/ecs-alb-target": "^1.4.0",
     "@cfn-modules/ecs-cluster": "^1.2.0",
     "@cfn-modules/elasticache-redis": "^1.1.0",
-    "@cfn-modules/elasticache-serverless": "^0.1.0",
     "@cfn-modules/fargate-scheduled-task": "^1.7.0",
     "@cfn-modules/fargate-service": "^2.15.1",
     "@cfn-modules/kms-key": "^1.2.1",
