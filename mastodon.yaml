@@ -121,6 +121,23 @@ Resources:
       Parameters:
         OriginBucketModule: !GetAtt 'Bucket.Outputs.StackName'
       TemplateURL: './node_modules/@cfn-modules/cloudfront/module.yml'
+  Cache:
+    Type: 'AWS::CloudFormation::Stack'
+    Properties:
+      Parameters:
+        VpcModule: !GetAtt 'Vpc.Outputs.StackName'
+        ClientSgModule: !GetAtt 'ClientSg.Outputs.StackName'
+        AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
+        KmsKeyModule: !GetAtt 'Key.Outputs.StackName'
+        EngineVersion: '5.0.6'
+        CacheNodeType: 'cache.t4g.micro'
+        TransitEncryption: 'false'
+        AuthToken: ''
+        SnapshotRetentionLimit: '35'
+        SnapshotName: ''
+        NumShards: '1'
+        NumReplicas: '0'
+      TemplateURL: './node_modules/@cfn-modules/elasticache-redis/module.yml'
   ServerlessCache:
     Type: 'AWS::CloudFormation::Stack'
     Properties:
