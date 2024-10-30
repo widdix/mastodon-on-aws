@@ -45,7 +45,7 @@ $ bundle exec rails secret
 758a3b431265776b9ab55910890162bb84aec0617724ca611475c3a774965f2d0aca183091d3c1a84ff3640cf7cc438c559034a2735253ee895b7a2308ac450c
 
 # Generate OTP_SECRET
-$ bundle exec rake secret
+$ bundle exec rails secret
 c528b5cbb0236e4b0c2fe38a6d7ed1edc5fa12608c67a45690e225f005bad8bfbabfa99f7b83cb9c0981ba8fcc5fd76c68918d9bc854bd158c2c23fd6df89abc
 
 # Generate VAPID_PRIVATE_KEY and VAPID_PUBLIC_KEY
