@@ -41,7 +41,7 @@ To generate the required secrets and keys use the following commands.
 $ docker run -it ghcr.io/mastodon/mastodon:latest sh
 
 # Generate SECRET_KEY_BASE
-$ bundle exec rake secret
+$ bundle exec rails secret
 758a3b431265776b9ab55910890162bb84aec0617724ca611475c3a774965f2d0aca183091d3c1a84ff3640cf7cc438c559034a2735253ee895b7a2308ac450c
 
 # Generate OTP_SECRET
