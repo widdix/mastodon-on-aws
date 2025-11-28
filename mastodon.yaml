@@ -59,14 +59,19 @@ Parameters:
     Description: 'Number of days to keep automated snapshots'
     Type: Number
     Default: 30
-  MastodonVersion:
-    Description: 'Version of the mastodon and mastodon-streaming packages to deploy'
+  OverrideMastodonContainerImage:
+    Description: 'Override the container image used to spin up the web and the sidekiq service.'
     Type: String
-    Default: 'v4.5.2'
-  ECRRegistry:
-    Description: 'The Elastic Container Registry (ECR) repo where the Mastodon Docker images reside.'
+    Default: ''
+  OverrideMastodonStreamingContainerImage:
+    Description: 'Override the container image used to spin up the streaming API service.'
     Type: String
-    Default: 'public.ecr.aws/h6i3a8b9'
+    Default: ''
+Conditions:
+  HasOverrideMastodonContainerImage:
+    !Not [!Equals [!Ref OverrideMastodonContainerImage, '']]
+  HasOverrideMastodonStreamingContainerImage:
+    !Not [!Equals [!Ref OverrideMastodonStreamingContainerImage, '']]
 Resources:
   Alerting:
     Type: 'AWS::CloudFormation::Stack'
@@ -179,7 +184,7 @@ Resources:
         AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
         ClientSgModule1: !GetAtt 'ClientSg.Outputs.StackName'
         ManagedPolicyArns: !Ref S3Policy
-        AppImage: !Sub '${ECRRegistry}/mastodon:${MastodonVersion}'
+        AppImage: !If [HasOverrideMastodonContainerImage, OverrideMastodonContainerImage, 'public.ecr.aws/h6i3a8b9/mastodon:v4.5.2']
         AppCommand: 'bash,-c,bundle exec rails db:migrate && bundle exec rails s -p 3000'
         AppPort: '3000'
         AppEnvironment1Key: 'LOCAL_DOMAIN'
@@ -260,7 +265,7 @@ Resources:
         AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
         ClientSgModule1: !GetAtt 'ClientSg.Outputs.StackName'
         ManagedPolicyArns: !Ref S3Policy
-        AppImage: !Sub '${ECRRegistry}/mastodon-streaming:${MastodonVersion}'
+        AppImage: !If [HasOverrideMastodonStreamingContainerImage, OverrideMastodonStreamingContainerImage, 'public.ecr.aws/h6i3a8b9/mastodon-streaming:v4.5.2']
         AppCommand: 'bash,-c,node ./streaming/index.js'
         AppPort: '4000'
         AppEnvironment1Key: 'LOCAL_DOMAIN'
@@ -340,7 +345,7 @@ Resources:
         AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
         ClientSgModule1: !GetAtt 'ClientSg.Outputs.StackName'
         ManagedPolicyArns: !Ref S3Policy
-        AppImage: !Sub '${ECRRegistry}/mastodon:${MastodonVersion}'
+        AppImage: !If [HasOverrideMastodonContainerImage, OverrideMastodonContainerImage, 'public.ecr.aws/h6i3a8b9/mastodon:v4.5.2']
         AppCommand: 'bash,-c,bundle exec sidekiq'
         AppEnvironment1Key: 'LOCAL_DOMAIN'
         AppEnvironment1Value: !Ref DomainName
@@ -419,7 +424,7 @@ Resources:
         AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
         ClientSgModule1: !GetAtt 'ClientSg.Outputs.StackName'
         ManagedPolicyArns: !Ref S3Policy
-        AppImage: !Sub '${ECRRegistry}/mastodon:${MastodonVersion}'
+        AppImage: !If [HasOverrideMastodonContainerImage, OverrideMastodonContainerImage, 'public.ecr.aws/h6i3a8b9/mastodon:v4.5.2']
         AppCommand: 'bash,-c,RAILS_ENV=production bin/tootctl media remove && RAILS_ENV=production bin/tootctl preview_cards remove'
         AppEnvironment1Key: 'LOCAL_DOMAIN'
         AppEnvironment1Value: !Ref DomainName
