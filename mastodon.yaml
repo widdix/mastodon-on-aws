@@ -247,7 +247,7 @@ Resources:
         LogsRetentionInDays: '14'
         SubnetsReach: 'Public'
         AutoScaling: 'false'
-        HealthCheckGracePeriodSeconds: '60'
+        HealthCheckGracePeriodSeconds: '180'
         Spot: !Ref Spot
         CpuArchitecture: 'X86_64'
         OperatingSystemFamily: 'LINUX'
