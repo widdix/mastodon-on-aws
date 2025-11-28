@@ -62,7 +62,7 @@ Parameters:
   MastodonVersion:
     Description: 'Version of the mastodon and mastodon-streaming packages to deploy'
     Type: String
-    Default: 'v4.4.4'
+    Default: 'v4.5.2'
   ECRRegistry:
     Description: 'The Elastic Container Registry (ECR) repo where the Mastodon Docker images reside.'
     Type: String
