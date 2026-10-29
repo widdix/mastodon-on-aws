@@ -142,7 +142,8 @@ Resources:
         ClientSgModule: !GetAtt 'ClientSg.Outputs.StackName'
         AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
         KmsKeyModule: !GetAtt 'Key.Outputs.StackName'
-        EngineVersion: '5.0.6'
+        Engine: 'valkey'
+        EngineVersion: '8.1'
         CacheNodeType: 'cache.t4g.micro'
         TransitEncryption: 'false'
         AuthToken: ''
@@ -184,7 +185,7 @@ Resources:
         AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
         ClientSgModule1: !GetAtt 'ClientSg.Outputs.StackName'
         ManagedPolicyArns: !Ref S3Policy
-        AppImage: !If [HasOverrideMastodonContainerImage, !Ref OverrideMastodonContainerImage, 'public.ecr.aws/h6i3a8b9/mastodon:v4.5.20']
+        AppImage: !If [HasOverrideMastodonContainerImage, !Ref OverrideMastodonContainerImage, 'public.ecr.aws/h6i3a8b9/mastodon:v4.7.4']
         AppCommand: 'bash,-c,bundle exec rails db:migrate && bundle exec rails s -p 3000'
         AppPort: '3000'
         AppEnvironment1Key: 'LOCAL_DOMAIN'
@@ -247,7 +248,7 @@ Resources:
         LogsRetentionInDays: '14'
         SubnetsReach: 'Public'
         AutoScaling: 'false'
-        HealthCheckGracePeriodSeconds: '180'
+        HealthCheckGracePeriodSeconds: '600'
         Spot: !Ref Spot
         CpuArchitecture: 'X86_64'
         OperatingSystemFamily: 'LINUX'
@@ -265,7 +266,7 @@ Resources:
         AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
         ClientSgModule1: !GetAtt 'ClientSg.Outputs.StackName'
         ManagedPolicyArns: !Ref S3Policy
-        AppImage: !If [HasOverrideMastodonStreamingContainerImage, !Ref OverrideMastodonStreamingContainerImage, 'public.ecr.aws/h6i3a8b9/mastodon-streaming:v4.5.20']
+        AppImage: !If [HasOverrideMastodonStreamingContainerImage, !Ref OverrideMastodonStreamingContainerImage, 'public.ecr.aws/h6i3a8b9/mastodon-streaming:v4.7.4']
         AppCommand: 'bash,-c,node ./streaming/index.js'
         AppPort: '4000'
         AppEnvironment1Key: 'LOCAL_DOMAIN'
@@ -345,7 +346,7 @@ Resources:
         AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
         ClientSgModule1: !GetAtt 'ClientSg.Outputs.StackName'
         ManagedPolicyArns: !Ref S3Policy
-        AppImage: !If [HasOverrideMastodonContainerImage, !Ref OverrideMastodonContainerImage, 'public.ecr.aws/h6i3a8b9/mastodon:v4.5.20']
+        AppImage: !If [HasOverrideMastodonContainerImage, !Ref OverrideMastodonContainerImage, 'public.ecr.aws/h6i3a8b9/mastodon:v4.7.4']
         AppCommand: 'bash,-c,bundle exec sidekiq'
         AppEnvironment1Key: 'LOCAL_DOMAIN'
         AppEnvironment1Value: !Ref DomainName
@@ -424,7 +425,7 @@ Resources:
         AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
         ClientSgModule1: !GetAtt 'ClientSg.Outputs.StackName'
         ManagedPolicyArns: !Ref S3Policy
-        AppImage: !If [HasOverrideMastodonContainerImage, !Ref OverrideMastodonContainerImage, 'public.ecr.aws/h6i3a8b9/mastodon:v4.5.20']
+        AppImage: !If [HasOverrideMastodonContainerImage, !Ref OverrideMastodonContainerImage, 'public.ecr.aws/h6i3a8b9/mastodon:v4.7.4']
         AppCommand: 'bash,-c,RAILS_ENV=production bin/tootctl media remove && RAILS_ENV=production bin/tootctl preview_cards remove'
         AppEnvironment1Key: 'LOCAL_DOMAIN'
         AppEnvironment1Value: !Ref DomainName

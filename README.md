@@ -7,7 +7,7 @@ The architecture consists of the following building blocks.
 * Application Load Balancer (ALB)
 * ECS and Fargate
 * RDS Aurora Serverless v1
-* ElastiCache (Redis)
+* ElastiCache (Valkey)
 * S3
 * SES
 * CloudWatch
@@ -112,7 +112,7 @@ Estimating costs for AWS is not trivial. My estimation assumes a small Mastodon 
 | ---------- | ------------- | ----------------------------: |
 | ECS + Fargate | 3 Spot Tasks | $12.08 |
 | RDS for Postgres | t4g.micro | $12.10 |
-| ElastiCache for Redis | t4g.micro | $11.52 |
+| ElastiCache for Valkey | t4g.micro | $11.52 |
 | ALB | Load Balancer Hours | $16.20 |
 | S3 | 25 GB + requests | $0.58 |
 | Route 53 | Hosted Zone | $0.50 |
@@ -156,7 +156,7 @@ $ aws cloudformation deploy --template-file packaged.yml --stack-name mastodon-o
 Push Mastodon container image to ECR Public.
 
 ```
-MASTODON_VERSION="v4.5.20"
+MASTODON_VERSION="v4.7.4"
 docker pull --platform linux/amd64 ghcr.io/mastodon/mastodon:${MASTODON_VERSION}
 docker image tag ghcr.io/mastodon/mastodon:${MASTODON_VERSION} public.ecr.aws/h6i3a8b9/mastodon:${MASTODON_VERSION}
 aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/h6i3a8b9
