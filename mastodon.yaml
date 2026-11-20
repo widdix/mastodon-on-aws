@@ -321,6 +321,8 @@ Resources:
         AppEnvironment24Value: !Ref ActiveRecordEncryptionKeyDerivationSalt
         AppEnvironment25Key: 'ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY'
         AppEnvironment25Value: !Ref ActiveRecordEncryptionPrimaryKey
+        AppEnvironment26Key: 'DB_SSLMODE' # RDS for PostgreSQL 15+ enforces TLS (rds.force_ssl=1); the streaming server's node-postgres client only uses TLS when DB_SSLMODE is set, no-verify because Node does not trust the RDS CA
+        AppEnvironment26Value: 'no-verify'
         Cpu: '0.25'
         Memory: '0.5'
         DesiredCount: '1'
