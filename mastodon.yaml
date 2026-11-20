@@ -551,7 +551,7 @@ Resources:
         VpcModule: !GetAtt 'Vpc.Outputs.StackName'
         AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
         HealthCheckPath: '/api/v1/streaming/health'
-        PathPattern: '/api/v1/streaming/*'
+        PathPattern: '/api/v1/streaming*' # matches /api/v1/streaming (used by some apps) and /api/v1/streaming/...
         Priority: 2
       TemplateURL: './node_modules/@cfn-modules/ecs-alb-target/module.yml'
   Certificate:
