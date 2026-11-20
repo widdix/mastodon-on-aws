@@ -168,6 +168,8 @@ Resources:
         DBMasterUsername: 'mastodon'
         DBMultiAZ: 'false'
         EngineVersion: '17'
+        CACertificateIdentifier: 'rds-ca-rsa2048-g1'
+        CertificateRotationRestart: 'false' # PostgreSQL supports CA rotation without restart; clients don't verify the server certificate
       TemplateURL: './node_modules/@cfn-modules/rds-postgres/module.yml'
   Cluster:
     Type: 'AWS::CloudFormation::Stack'
@@ -241,7 +243,7 @@ Resources:
         AppEnvironment25Key: 'ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY'
         AppEnvironment25Value: !Ref ActiveRecordEncryptionPrimaryKey
         Cpu: '0.5'
-        Memory: '1'
+        Memory: '2'
         DesiredCount: '1'
         MaxCapacity: '1'
         MinCapacity: '1'
@@ -265,64 +267,22 @@ Resources:
         TargetModule: !GetAtt 'StreamingApiTarget.Outputs.StackName'
         AlertingModule: !GetAtt 'Alerting.Outputs.StackName'
         ClientSgModule1: !GetAtt 'ClientSg.Outputs.StackName'
-        ManagedPolicyArns: !Ref S3Policy
         AppImage: !If [HasOverrideMastodonStreamingContainerImage, !Ref OverrideMastodonStreamingContainerImage, 'public.ecr.aws/h6i3a8b9/mastodon-streaming:v4.7.6']
         AppCommand: 'bash,-c,node ./streaming/index.js'
         AppPort: '4000'
-        AppEnvironment1Key: 'LOCAL_DOMAIN'
-        AppEnvironment1Value: !Ref DomainName
-        AppEnvironment2Key: 'REDIS_HOST'
-        AppEnvironment2Value: !GetAtt 'Cache.Outputs.DnsName'
-        AppEnvironment3Key: 'DB_PASS'
-        AppEnvironment3SecretModule: !GetAtt 'Secret.Outputs.StackName'
-        AppEnvironment4Key: 'ES_ENABLED'
-        AppEnvironment4Value: 'false'
-        AppEnvironment4SecretModule: ''
-        AppEnvironment5Key: 'SECRET_KEY_BASE'
-        AppEnvironment5Value: !Ref SecretKeyBase
-        AppEnvironment5SecretModule: ''
-        AppEnvironment6Key: 'OTP_SECRET'
-        AppEnvironment6Value: !Ref OtpSecret
-        AppEnvironment7Key: 'VAPID_PRIVATE_KEY'
-        AppEnvironment7Value: !Ref VapidPrivateKey
-        AppEnvironment8Key: 'VAPID_PUBLIC_KEY'
-        AppEnvironment8Value: !Ref VapidPublicKey
-        AppEnvironment9Key: 'S3_ENABLED'
-        AppEnvironment9Value: 'true'
-        AppEnvironment10Key: 'S3_BUCKET'
-        AppEnvironment10Value: !GetAtt 'Bucket.Outputs.Name'
-        AppEnvironment11Key: 'DB_NAME'
-        AppEnvironment11Value: 'mastodon'
-        AppEnvironment12Key: 'DB_USER'
-        AppEnvironment12Value: 'mastodon'
-        AppEnvironment13Key: 'DB_HOST'
-        AppEnvironment13Value: !GetAtt 'Database.Outputs.DnsName'
-        AppEnvironment14Key: 'RAILS_ENV'
-        AppEnvironment14Value: 'production'
-        AppEnvironment15Key: 'SMTP_SERVER'
-        AppEnvironment15Value: !Sub 'email-smtp.${AWS::Region}.amazonaws.com'
-        AppEnvironment16Key: 'SMTP_PORT'
-        AppEnvironment16Value: '587'
-        AppEnvironment17Key: 'SMTP_LOGIN'
-        AppEnvironment17Value: !Ref 'EmailUserAccessKey'
-        AppEnvironment18Key: 'SMTP_PASSWORD'
-        AppEnvironment18Value: !GetAtt 'SmtpPasswordConverter.SmtpPassword'
-        AppEnvironment19Key: 'SMTP_FROM_ADDRESS'
-        AppEnvironment19Value: !Sub 'noreply@${DomainName}'
-        AppEnvironment20Key: 'S3_REGION'
-        AppEnvironment20Value: !Ref 'AWS::Region'
-        AppEnvironment21Key: 'S3_ALIAS_HOST'
-        AppEnvironment21Value: !GetAtt 'CloudFront.Outputs.DistributionDomainName'
-        AppEnvironment22Key: 'S3_PERMISSION'
-        AppEnvironment22Value: 'private'
-        AppEnvironment23Key: 'ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY'
-        AppEnvironment23Value: !Ref ActiveRecordEncryptionDeterministicKey
-        AppEnvironment24Key: 'ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT'
-        AppEnvironment24Value: !Ref ActiveRecordEncryptionKeyDerivationSalt
-        AppEnvironment25Key: 'ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY'
-        AppEnvironment25Value: !Ref ActiveRecordEncryptionPrimaryKey
-        AppEnvironment26Key: 'DB_SSLMODE' # RDS for PostgreSQL 15+ enforces TLS (rds.force_ssl=1); the streaming server's node-postgres client only uses TLS when DB_SSLMODE is set, no-verify because Node does not trust the RDS CA
-        AppEnvironment26Value: 'no-verify'
+        # The streaming server only needs Valkey and PostgreSQL (see streaming/*.js); no S3 access, SMTP credentials, or Rails secrets.
+        AppEnvironment1Key: 'REDIS_HOST'
+        AppEnvironment1Value: !GetAtt 'Cache.Outputs.DnsName'
+        AppEnvironment2Key: 'DB_PASS'
+        AppEnvironment2SecretModule: !GetAtt 'Secret.Outputs.StackName'
+        AppEnvironment3Key: 'DB_NAME'
+        AppEnvironment3Value: 'mastodon'
+        AppEnvironment4Key: 'DB_USER'
+        AppEnvironment4Value: 'mastodon'
+        AppEnvironment5Key: 'DB_HOST'
+        AppEnvironment5Value: !GetAtt 'Database.Outputs.DnsName'
+        AppEnvironment6Key: 'DB_SSLMODE' # RDS for PostgreSQL 15+ enforces TLS (rds.force_ssl=1); the streaming server's node-postgres client only uses TLS when DB_SSLMODE is set, no-verify because Node does not trust the RDS CA
+        AppEnvironment6Value: 'no-verify'
         Cpu: '0.25'
         Memory: '0.5'
         DesiredCount: '1'
@@ -576,8 +536,20 @@ Resources:
         Version: "2012-10-17"
         Statement:
         - Effect: Allow
-          Action: 's3:*'
-          Resource: !Split [',', !GetAtt 'Bucket.Outputs.IamResources']
+          Action:
+          - 's3:GetBucketLocation'
+          - 's3:ListBucket' # tootctl media remove-orphans
+          - 's3:ListBucketMultipartUploads'
+          Resource: !GetAtt 'Bucket.Outputs.Arn'
+        - Effect: Allow
+          Action:
+          - 's3:GetObject'
+          - 's3:PutObject'
+          - 's3:PutObjectAcl' # Mastodon sets the S3_PERMISSION ACL on upload
+          - 's3:DeleteObject'
+          - 's3:AbortMultipartUpload'
+          - 's3:ListMultipartUploadParts'
+          Resource: !Sub '${Bucket.Outputs.Arn}/*'
   EmailIdentity:
     Type: AWS::SES::EmailIdentity
     Properties:
@@ -620,7 +592,7 @@ Resources:
           Statement:
           - Effect: Allow
             Action: 'ses:SendRawEmail'
-            Resource: '*'
+            Resource: !Sub 'arn:${AWS::Partition}:ses:${AWS::Region}:${AWS::AccountId}:identity/${DomainName}'
   EmailUserAccessKey:
     Type: AWS::IAM::AccessKey
     Properties:
